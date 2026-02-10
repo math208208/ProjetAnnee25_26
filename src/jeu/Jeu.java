@@ -47,6 +47,8 @@ public class Jeu {
 
 	// Nombre de fragments brulés (3 = partie gagné)
 	private int fragmentsBrules = 0;
+	
+	private boolean cheminerAllume=false;
 
 	private int nbVie = 3;
 
@@ -252,10 +254,16 @@ public class Jeu {
 	}
 
 	private void bruler() {
+		
 		//TODO ajouter verif cheminé allumé
 		if (!zoneCourante.toString().equals("le salon")) {
 			gui.afficher("Vous ne pouvez brûler des objets que dans la cheminer du salon !");
-
+			return;
+		}
+		
+		if(cheminerAllume == false) {
+			gui.afficher("Vous ne pouvez brûler des objets que si la cheminé est allumé !");
+			return;
 		}
 
 		if (sacADos.isEmpty()) {
