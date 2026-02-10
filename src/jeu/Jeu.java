@@ -48,7 +48,7 @@ public class Jeu {
 	// Nombre de fragments brulés (3 = partie gagné)
 	private int fragmentsBrules = 0;
 	
-	private boolean cheminerAllume=false;
+	private boolean feuAllume=false;
 
 	private int nbVie = 3;
 
@@ -187,6 +187,9 @@ public class Jeu {
 		case "E", "EST" -> allerEn(Direction.EST);
 		case "O", "OUEST" -> allerEn(Direction.OUEST);
 		case "B", "BRULER" -> bruler();
+		case "AL", "ALLUMER_LUM" -> allumerLumiere();
+		case "AF", "ALLUMER_FEU" -> allumerFeu();
+		case "I", "INVENTAIRE" -> ouvrirInventaire();
 		case "Q", "QUITTER" -> terminer();
 		default -> gui.afficher("Commande inconnue");
 		}
@@ -260,7 +263,7 @@ public class Jeu {
 			return;
 		}
 		
-		if(cheminerAllume == false) {
+		if(feuAllume == false) {
 			gui.afficher("Vous ne pouvez brûler des objets que si la cheminé est allumé !");
 			return;
 		}
@@ -296,10 +299,56 @@ public class Jeu {
 			finDePartie();
 		}
 	}
+	
+	
+	private void allumerLumiere() {
+		if (!zoneCourante.toString().equals("le salon")) {
+			gui.afficher("Vous ne pouvez allumer la lumiere que dans le salon !");
+			return;
+		}
+		
+		//TODO changement carte zone avec de la lumiere
+	}
+	
+	private void allumerFeu() {
+		if (!zoneCourante.toString().equals("le salon")) {
+			gui.afficher("Vous ne pouvez allumer la cheminé que dans le salon !");
+			return;
+		}
+		
+		Objet bois = null;
+	    Objet allumettes = null;
+	    
+		for (Objet obj : sacADos) {
+			if(obj.getNom().equals("bois")) {
+				bois=obj;
+			}
+			if(obj.getNom().equals("allumettes")){
+				allumettes=obj;
+			}
+		}
+		
+		if(bois!=null && allumettes!=null) {
+			sacADos.remove(bois);
+			sacADos.remove(allumettes);
+			
+			feuAllume=true;
+			//TODO changer image pour feu allumé
+			gui.afficher("Vous craquez une allumette et enflammerez le bois. La cheminée est prête pour la purification.");
+			
+		}else {
+			gui.afficher("Il vous manque des éléments. Vous avez besoin de bois et d'allumettes.");
+		}
+	}
 
 	private void finDePartie() {
 		// TODO
 	}
+	
+	private void ouvrirInventaire() {
+		//TODO
+	}
+	
 
 	/**
 	 * Termine le jeu, affiche un message d'au revoir et désactive l'interface.
