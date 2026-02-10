@@ -27,7 +27,11 @@ public enum Direction implements Commande {
     EST("E", "E (aller à l'est)"),
     
     /** Déplacement vers l'ouest */
-    OUEST("O", "O (aller à l'ouest)");
+    OUEST("O", "O (aller à l'ouest)"),
+    
+    //ajouter pour se deplacer vers qlq chose
+	
+	MIROIR("M", "M (se deplacer via le miroir");
 	
 	/** Abréviation de la direction */
 	private final String abreviation;

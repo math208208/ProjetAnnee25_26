@@ -20,7 +20,30 @@ public enum CommandeNonDirectionnelle implements Commande {
 	/** Commande terminant le jeu */
 	QUITTER("Q", "Q (quitter)"),
 	
-	RETOUR("R", "R (retour)");
+	RETOUR("R", "R (retour)"),
+	
+	PRENDRE("P", "P (prendre un objet)"),
+	
+	DEPOT("D", "D (deposer un objet dans la zone)"),
+	
+	INVENTAIRE("I", "I (Voir l'inventaire)"),
+	
+    UTILISER("U", "U (utiliser un objet)"),
+    
+    OUVRIR("OU", "OU (ouvrir un conteneur)"),
+    
+    ALLUMER_FEU("AF", "AF (Allumer la cheminer)"),
+    
+    ALLUMER_LUM("AL", "AL (Allumer la lumiere)"),
+
+    BRULER("B", "B (brûler un fragment)"),
+    
+    SAUVER("SAUV", "SAUV (Sauvgarder la partie)"),
+
+    ABANDON("AB", "AB (Abandonner la partie)"),
+    
+    TEST("T", "T (Executter une partie victorieuse)");
+	
 
 	/** Abréviation de la commande */
     private final String abreviation;
