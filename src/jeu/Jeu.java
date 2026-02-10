@@ -255,7 +255,6 @@ public class Jeu {
 
 	private void bruler() {
 		
-		//TODO ajouter verif cheminé allumé
 		if (!zoneCourante.toString().equals("le salon")) {
 			gui.afficher("Vous ne pouvez brûler des objets que dans la cheminer du salon !");
 			return;
