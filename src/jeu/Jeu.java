@@ -1,5 +1,9 @@
 package jeu;
 
+import java.io.Console;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -34,6 +38,17 @@ public class Jeu {
 
 	/** Zones precedente dans laquelle se trouvait le joueur */
 	private Stack<Zone> historiqueZones;
+
+	// Création du sac a dos
+	private List<Objet> sacADos = new ArrayList<>();
+
+	// Capacité max du sac
+	private final int CAPACITE_MAX = 5;
+
+	// Nombre de fragments brulés (3 = partie gagné)
+	private int fragmentsBrules = 0;
+
+	private int nbVie = 3;
 
 	/**
 	 * Construit un nouveau jeu.
@@ -169,6 +184,7 @@ public class Jeu {
 		case "S", "SUD" -> allerEn(Direction.SUD);
 		case "E", "EST" -> allerEn(Direction.EST);
 		case "O", "OUEST" -> allerEn(Direction.OUEST);
+		case "B", "BRULER" -> bruler();
 		case "Q", "QUITTER" -> terminer();
 		default -> gui.afficher("Commande inconnue");
 		}
@@ -233,6 +249,49 @@ public class Jeu {
 			}
 		}
 		return false;
+	}
+
+	private void bruler() {
+		//TODO ajouter verif cheminé allumé
+		if (!zoneCourante.toString().equals("le salon")) {
+			gui.afficher("Vous ne pouvez brûler des objets que dans la cheminer du salon !");
+
+		}
+
+		if (sacADos.isEmpty()) {
+			gui.afficher("Il n'y a aucun objet dans votre sac");
+			return;
+		}
+
+		int nbObjetBruleCetteFois = 0;
+		
+		Iterator<Objet> it = sacADos.iterator();
+	    while (it.hasNext()) {
+	        Objet obj = it.next();
+	        
+	        if (obj.estFragment()) {
+	            String nom = obj.getNom(); 
+	            it.remove(); 
+	            fragmentsBrules++;
+	            nbObjetBruleCetteFois++;
+	            gui.afficher(nom + " a été purifié dans les flammes.");
+	        }
+	    }
+
+		if (nbObjetBruleCetteFois == 0) {
+			gui.afficher("Aucun objet ne peut être brulé");
+		} else {
+			gui.afficher("Tout les objets disponible on etaient brulés");
+		}
+
+		if (fragmentsBrules == 3) {
+			gui.afficher("Félicitations ! Le Baron Cole est libéré. Vous avez gagné !");
+			finDePartie();
+		}
+	}
+
+	private void finDePartie() {
+		// TODO
 	}
 
 	/**
