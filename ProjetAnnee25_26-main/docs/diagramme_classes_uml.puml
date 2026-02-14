@@ -1,0 +1,224 @@
+@startuml Heritage_Maudit_Diagramme_Complet
+
+title L'Héritage Maudit - Diagramme de Classes UML Complet
+
+!define EXISTANT_COLOR #C8E6C9
+!define ETENDRE_COLOR #FFF9C4
+!define NOUVEAU_COLOR #BBDEFB
+
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+legend right
+  |<#C8E6C9>| **Existant** - Code de la prof |
+  |<#FFF9C4>| **À étendre** - Ajouter fonctionnalités |
+  |<#BBDEFB>| **Nouveau** - À créer |
+endlegend
+
+' Pour générer en PNG : utilisez http://www.plantuml.com/plantuml/uml/
+' Ou VS Code avec extension PlantUML
+
+package "jeu" {
+    interface Commande <<EXISTANT>> EXISTANT_COLOR {
+        + getAbreviation(): String
+        + getDescription(): String
+    }
+    
+    enum Direction <<EXISTANT>> EXISTANT_COLOR {
+        NORD, SUD, EST, OUEST
+    }
+    
+    enum CommandeNonDirectionnelle <<ÉTENDRE>> ETENDRE_COLOR {
+        AIDE, QUITTER
+        + RETOUR, PRENDRE, DEPOSER
+        + INVENTAIRE, UTILISER, OUVRIR
+        + ALLUMER_LUMIERE, ALLUMER_FEU
+        + BRULER, MIROIR, SAUVEGARDER
+        + ABANDON, TEST
+    }
+    
+    class Zone <<ÉTENDRE>> ETENDRE_COLOR {
+        - description: String
+        - nomImage: String
+        + nom: String [+]
+        + objetsPresents: List [+]
+        + conteneurs: List [+]
+        + eclairee: boolean [+]
+    }
+    
+    class Jeu <<ÉTENDRE>> ETENDRE_COLOR {
+        - gui: GUI
+        - zoneCourante: Zone
+        + joueur: Joueur [+]
+        + manoir: Manoir [+]
+        + fragmentsADetruire: List [+]
+        + etatJeu: EtatJeu [+]
+        --
+        + traiterCommande(String)
+        + executerPrendre() [+]
+        + executerOuvrir() [+]
+        + executerBruler() [+]
+        + verifierVictoire() [+]
+    }
+    
+    class GUI <<ÉTENDRE>> ETENDRE_COLOR {
+        - jeu: Jeu
+        - fenetre: JFrame
+        + panneauInventaire [+]
+        + panneauStats [+]
+        --
+        + afficher(String)
+        + afficherDialogueEnigme() [+]
+    }
+    
+    class Main <<EXISTANT>> EXISTANT_COLOR {
+        + {static} main(String[])
+    }
+    
+    enum EtatJeu <<NOUVEAU>> NOUVEAU_COLOR {
+        EN_COURS, VICTOIRE
+        DEFAITE, PAUSE
+    }
+}
+
+package "jeu.joueur" NOUVEAU_COLOR {
+    class Joueur {
+        - nom: String
+        - pointsDeVie: int
+        - inventaire: Inventaire
+        --
+        + perdreVie(int)
+        + estVivant(): boolean
+    }
+    
+    class Inventaire {
+        - objets: List<ObjetJeu>
+        - CAPACITE_MAX: int = 5
+        --
+        + ajouter(ObjetJeu): boolean
+        + retirer(String): ObjetJeu
+        + estPlein(): boolean
+    }
+}
+
+package "jeu.environnement" NOUVEAU_COLOR {
+    class Manoir {
+        - zones: Map<String, Zone>
+        --
+        + creerCarte()
+        + getZone(String): Zone
+    }
+    
+    abstract class Conteneur {
+        # nom: String
+        # estOuvert: boolean
+        # estVerrouille: boolean
+        # contenu: List<ObjetJeu>
+        --
+        + ouvre(Joueur): boolean
+        + {abstract} declenchePiege(Joueur)
+    }
+    
+    class Coffre
+    class Cheminee {
+        - feuAllume: boolean
+        --
+        + allumerFeu(Joueur): boolean
+        + brulerFragment(ObjetMaudit, Jeu)
+    }
+    class Bureau
+    class CorpsBaron {
+        - enigme: Enigme
+        --
+        + declencherEnigme(): Enigme
+    }
+}
+
+package "jeu.objets" NOUVEAU_COLOR {
+    abstract class ObjetJeu {
+        # nom: String
+        # description: String
+        --
+        + {abstract} utiliser(Joueur, Jeu)
+    }
+    
+    class Cle
+    class ObjetMaudit {
+        - typeFragment: TypeFragment
+    }
+    class Allumettes
+    class MorceauBois
+    class Echelle
+    class Medaillon
+    
+    enum TypeFragment {
+        MONTRE_GOUSSET
+        PIPE_BOIS
+        JOURNAL_INTIME
+        PLUME
+        MEDAILLON
+    }
+}
+
+package "jeu.enigmes" NOUVEAU_COLOR {
+    class Enigme {
+        - question: String
+        - reponse: String
+        --
+        + verifierReponse(String): boolean
+    }
+    
+    class BanqueEnigmes {
+        - enigmes: List<Enigme>
+        --
+        + obtientEnigmeAleatoire(): Enigme
+    }
+}
+
+package "jeu.sauvegarde" NOUVEAU_COLOR {
+    class GestionnaireSauvegardeJSON {
+        + sauvegarder(EtatPartie, String)
+        + charger(String): EtatPartie
+    }
+    
+    class EtatPartie {
+        - nomJoueur: String
+        - vies: int
+        - inventaire: List<String>
+        - zoneActuelle: String
+    }
+}
+
+' Relations principales
+Jeu --> Joueur
+Jeu --> Manoir
+Jeu --> GUI
+Joueur --> Inventaire
+Inventaire o-- "*" ObjetJeu
+Zone o-- "*" ObjetJeu
+Zone o-- "*" Conteneur
+Conteneur <|-- Coffre
+Conteneur <|-- Cheminee
+Conteneur <|-- Bureau
+Conteneur <|-- CorpsBaron
+ObjetJeu <|-- Cle
+ObjetJeu <|-- ObjetMaudit
+ObjetJeu <|-- Allumettes
+ObjetJeu <|-- MorceauBois
+ObjetJeu <|-- Echelle
+ObjetJeu <|-- Medaillon
+CorpsBaron o-- Enigme
+BanqueEnigmes *-- "*" Enigme
+
+note right of Cheminee
+  Vérifie présence 
+  Bois + Allumettes
+  avant allumer feu
+end note
+
+note right of GestionnaireSauvegardeJSON
+  Format JSON
+  (pas sérialisation Java)
+end note
+
+@enduml
