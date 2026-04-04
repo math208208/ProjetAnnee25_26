@@ -1,5 +1,6 @@
 package jeu;
 
+import java.lang.annotation.Repeatable;
 
 public enum CommandeNonDirectionnelle implements Commande {
 	AIDE("?", "? (aide)"),
@@ -12,8 +13,6 @@ public enum CommandeNonDirectionnelle implements Commande {
 
 	INVENTAIRE("I", "I (Voir l'inventaire)"),
 
-	UTILISER("U", "U (utiliser un objet)"),
-
 	OUVRIR("OU", "OU (ouvrir un conteneur)"),
 
 	ALLUMER_FEU("AF", "AF (Allumer la cheminer)"),
@@ -24,6 +23,8 @@ public enum CommandeNonDirectionnelle implements Commande {
 
 	BRULER("B", "B (brûler un fragment)"),
 
+	REPONDRE("REP","REP (Repondre a la question) "),
+
 	SAUVER("SAUV", "SAUV (Sauvgarder la partie)"),
 
 	ABANDON("AB", "AB (Abandonner la partie)"),
@@ -33,23 +34,20 @@ public enum CommandeNonDirectionnelle implements Commande {
 	MIROIR("M", "M (se deplacer via le miroir"),
 
 	TELEPORTER("TP", "TP teleportation via miroir");
-	
+
 	private final String abreviation;
 
 	private final String description;
-
 
 	private CommandeNonDirectionnelle(String a, String d) {
 		abreviation = a;
 		description = d;
 	}
 
-
 	@Override
 	public String getAbreviation() {
 		return abreviation;
 	}
-
 
 	@Override
 	public String getDescription() {

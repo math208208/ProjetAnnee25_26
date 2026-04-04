@@ -58,7 +58,7 @@ public abstract class Conteneur {
 
     public void declenchePiege(Joueur joueur) {
         if (estPiege) {
-            joueur.perdreVie(); // Diminue les PV en cas de piège [cite: 97, 108]
+            joueur.perdreVie();
         }
     }
     public void setVerrouille(boolean estVerrouille) {

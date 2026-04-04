@@ -5,7 +5,7 @@ import jeu.joueur.Joueur;
 
 public class Cle extends ObjetJeu {
 	
-	private String cible; // Ex: "Bureau", "Coffre Chambre 1"
+	private String cible;
 
 	public Cle(String nom, String description, String cible) {
 		super(nom, description, false);

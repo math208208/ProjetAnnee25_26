@@ -25,13 +25,12 @@ public abstract class ObjetJeu {
 
 	public boolean estFragment() {
 		return estFragment;
-	} // J'ai fusionné avec isEstFragment()
+	} 
 
 	@Override
 	public String toString() {
 		return nom;
 	}
 
-	// Rendue abstraite pour forcer l'implémentation dans les classes filles
 	public abstract void utiliser(Joueur joueur, Jeu jeu);
 }

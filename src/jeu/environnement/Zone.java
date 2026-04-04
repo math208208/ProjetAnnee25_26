@@ -69,7 +69,7 @@ public class Zone {
 	public void revelerSortieCachee(String action, Direction direction) {
 		Zone zoneCachee = sortiesCachees.get(action);
 		if (zoneCachee != null) {
-			ajouteSortie(direction, zoneCachee); // Révèle la sortie (ex: Cave) [cite: 45]
+			ajouteSortie(direction, zoneCachee); 
 		}
 	}
 
@@ -102,7 +102,6 @@ public class Zone {
 		return null;
 	}
 
-	// NOUVELLE MÉTHODE : Liste les objets posés dans la pièce
 	public String listerObjets() {
 		if (objetsPresents == null || objetsPresents.isEmpty()) {
 			return "Il n'y a aucun objet visible ici.";
@@ -115,13 +114,12 @@ public class Zone {
 		return String.join(", ", nomsObjets);
 	}
 
-	// NOUVELLE MÉTHODE : Permet de récupérer tous les conteneurs de la pièce
 	public List<Conteneur> getConteneurs() {
 		return this.conteneurs;
 	}
 	
 	public int getNombreObjetsSurSol() {
-	    return objetsPresents.size(); // Retourne la taille de la liste des objets au sol
+	    return objetsPresents.size();
 	}
 
 	public String toString() {

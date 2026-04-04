@@ -15,7 +15,7 @@ public class Cheminee extends Conteneur {
     }
 
     public boolean verifierPresenceBoisAllumettes(Inventaire inv) {
-        return inv.possedeBois() && inv.possedeAllumettes(); // Condition de purification [cite: 78]
+        return inv.possedeBois() && inv.possedeAllumettes(); 
     }
 
     public boolean allumerFeu(Joueur joueur) {
@@ -26,12 +26,6 @@ public class Cheminee extends Conteneur {
             return true;
         }
         return false;
-    }
-
-    public void brulerFragment(ObjetMaudit objet, Jeu jeu) {
-        if (feuAllume && objet.estFragment()) {
-            // La destruction sera gérée par la méthode bruler() dans Jeu [cite: 71, 80]
-        }
     }
 
     @Override

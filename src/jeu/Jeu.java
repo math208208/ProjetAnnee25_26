@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import jeu.enigmes.BanqueEnigmes;
+import jeu.enigmes.Enigme;
 import jeu.environnement.Conteneur;
 import jeu.environnement.Manoir;
 import jeu.environnement.Zone;
@@ -21,16 +23,17 @@ public class Jeu {
 	private Zone zoneCourante;
 	private ArrayDeque<Zone> historiqueZones;
 	private Joueur joueur;
-	private List<TypeFragment> fragmentsADetruire;
 	private int fragmentsDetruits = 0;
 	private EtatJeu etatJeu;
 	private Manoir manoir;
+	private BanqueEnigmes banqueEnigmes = new BanqueEnigmes();
+	private Enigme enigmeEnCours;
 
 	private boolean eclairageActif = false;
 	private boolean chemineActif = false;
 	private boolean miroirActive = false;
+
 	public Jeu() {
-		// IMPORTANT : Initialiser le joueur pour éviter un NullPointerException
 		joueur = new Joueur("Elias Cole");
 		historiqueZones = new ArrayDeque<>();
 		this.manoir = new Manoir();
@@ -41,8 +44,6 @@ public class Jeu {
 	}
 
 	private void initialiserObjets() {
-		System.out.println("=== PLACEMENT DES OBJETS (AVEC RANDOMISEUR) ===");
-
 		Random rand = new Random();
 		Randomiseur randomiseur = new Randomiseur();
 		List<Zone> toutesLesZones = manoir.getToutesLesZones();
@@ -57,35 +58,31 @@ public class Jeu {
 		List<Zone> zonesSansCave = new ArrayList<>(toutesLesZones);
 		zonesSansCave.remove(cave);
 
-		// ---------------------------------------------------------
 		// 1. LES OBJETS FIXES
-		// ---------------------------------------------------------
 		cuisine.getConteneur("Tiroir").ajouteObjet(new Allumettes("allumettes", "Boîte d'allumettes"));
 		bibliotheque.ajouteObjet(new MorceauBois("bois", "Morceau de bois"));
 
-		// ---------------------------------------------------------
 		// 2. PRÉPARATION DES OBJETS À DISTRIBUER SUR LE SOL
-		// ---------------------------------------------------------
 		List<ObjetJeu> objetsPourLeSol = new ArrayList<>();
 
 		objetsPourLeSol.add(new Echelle("echelle", "Une échelle"));
 		objetsPourLeSol.add(new MedaillonMagique("medaillonMagique", "Médaillon magique"));
 
 		// --- Mécanique Bureau / Armoire ---
-		Conteneur meubleBureau = bureau.getConteneur("Bureau"); // Majuscule c'est plus sûr
+		Conteneur meubleBureau = bureau.getConteneur("Bureau");
 		Conteneur armoire = bureau.getConteneur("Armoire");
-		Object cachetteGagnante = null; // <-- LA NOUVELLE VARIABLE EST ICI
+		Object cachetteGagnante = null;
 
 		if (rand.nextBoolean()) {
 			// CAS 1 : LE BUREAU EST VERROUILLÉ
 			meubleBureau.setVerrouille(true);
 			Cle cleBur = new Cle("cle_bureau", "Clé du bureau", "Bureau");
 			meubleBureau.setCleRequise(cleBur);
-			
+
 			// Placement sécurisé de la clé du bureau (qui exclut le bureau)
 			List<Zone> cachettesCleBureau = new ArrayList<>(zonesSansCave);
-			cachettesCleBureau.remove(bureau); 
-			
+			cachettesCleBureau.remove(bureau);
+
 			boolean placee = false;
 			while (!placee) {
 				Zone z = cachettesCleBureau.get(rand.nextInt(cachettesCleBureau.size()));
@@ -97,9 +94,8 @@ public class Jeu {
 
 			armoire.setVerrouille(false);
 			armoire.setCleRequise(null);
-			
-			// ICI ON DÉSIGNE LA PIÈCE COMME CACHETTE !
-			cachetteGagnante = bureau; 
+
+			cachetteGagnante = bureau;
 
 		} else {
 			// CAS 2 : L'ARMOIRE EST VERROUILLÉE
@@ -109,19 +105,16 @@ public class Jeu {
 			armoire.setVerrouille(true);
 			Cle cleArm = new Cle("cle_armoire", "Clé de l'armoire", "Armoire");
 			armoire.setCleRequise(cleArm);
-			
-			objetsPourLeSol.add(cleArm); 
-			
-			// ICI ON DÉSIGNE LE MEUBLE COMME CACHETTE !
-			cachetteGagnante = armoire; 
+
+			objetsPourLeSol.add(cleArm);
+
+			cachetteGagnante = armoire;
 		}
-		
+
 		// === APPEL DU RANDOMISEUR POUR TOUT PLACER ===
 		randomiseur.distribuerObjetsSurSol(objetsPourLeSol, zonesSansCave);
 
-		// ---------------------------------------------------------
 		// 3. LES CLÉS DES COFFRES (Règle spéciale : Sol OU Armoire)
-		// ---------------------------------------------------------
 		Cle cleCoffre1 = new Cle("cle_coffre_1", "Clé de coffre", "Coffre");
 		Cle cleCoffre2 = new Cle("cle_coffre_2", "Clé de coffre", "Coffre");
 
@@ -138,23 +131,19 @@ public class Jeu {
 		placerCleCoffre(cleCoffre1, cachettesPossibles, rand);
 		placerCleCoffre(cleCoffre2, cachettesPossibles, rand);
 
-		// ---------------------------------------------------------
 		// 4. LES 3 FRAGMENTS D'ÂME
-		// ---------------------------------------------------------
 		List<TypeFragment> types = randomiseur.choisir3FragmentsParmi5();
 		cave.getConteneur("CorpsBaron")
 				.ajouteObjet(new ObjetMaudit(types.get(0).name().toLowerCase(), "Fragment", types.get(0)));
 
-		// On utilise bien une List<Object> pour mélanger Coffres et Pièces
 		List<Object> cachettesFragments = new ArrayList<>();
 		cachettesFragments.add(chambre1.getConteneur("Coffre"));
 		cachettesFragments.add(chambre2.getConteneur("Coffre"));
-		
-		cachettesFragments.add(armoire); 
-		
-		java.util.Collections.shuffle(cachettesFragments);
 
-		// Création des objets
+		cachettesFragments.add(armoire);
+
+		Collections.shuffle(cachettesFragments);
+
 		ObjetMaudit fragment1 = new ObjetMaudit(types.get(1).name().toLowerCase(), "Fragment", types.get(1));
 		ObjetMaudit fragment2 = new ObjetMaudit(types.get(2).name().toLowerCase(), "Fragment", types.get(2));
 
@@ -173,33 +162,10 @@ public class Jeu {
 		} else if (cachette2 instanceof jeu.environnement.Conteneur) {
 			((jeu.environnement.Conteneur) cachette2).ajouteObjet(fragment2);
 		}
-		System.out.println("=== FIN DU PLACEMENT ===");
-		System.out.println("\n=== RÉCAPITULATIF DES EMPLACEMENTS (TRICHE) ===");
-		for (Zone z : toutesLesZones) {
-			String objetsSol = z.listerObjets();
-			if (!objetsSol.equals("Il n'y a aucun objet visible ici.")) {
-				System.out.println("[SOL] " + z.getNom() + " -> " + objetsSol);
-			}
-
-			for (jeu.environnement.Conteneur c : z.getConteneurs()) {
-				if (!c.getContenu().isEmpty()) {
-					java.util.List<String> nomsObjets = new java.util.ArrayList<>();
-					for (ObjetJeu obj : c.getContenu()) {
-						nomsObjets.add(obj.getNom());
-					}
-					System.out.println("[MEUBLE] " + z.getNom() + " (dans " + c.getNom() + ") -> "
-							+ String.join(", ", nomsObjets));
-				}
-			}
-		}
-		System.out.println("===============================================\n");
+		voirPositionObjetConsole(toutesLesZones);
 
 	}
 
-	// (Garde tes petites méthodes utilitaires placerCleCoffre et
-	// afficherTricheConsole ici)
-	// Petite méthode utilitaire pour placer les clés de coffre (car elles peuvent
-	// être dans une Zone ou un Conteneur)
 	private void placerCleCoffre(Cle cle, List<Object> cachettes, Random rand) {
 		boolean placee = false;
 
@@ -210,15 +176,14 @@ public class Jeu {
 			if (cachette instanceof Zone) {
 				Zone z = (Zone) cachette;
 
-				// LA SÉCURITÉ EST ICI : On ne pose la clé que s'il y a moins de 2 objets
+				// On ne pose la clé que s'il y a moins de 2 objets
 				if (z.getNombreObjetsSurSol() < 2) {
 					z.ajouteObjet(cle);
-					placee = true; // C'est bon, on sort de la boucle
+					placee = true;
 				}
 			} else if (cachette instanceof Conteneur) {
-				// Si c'est un conteneur (le meubleGagnant), on peut toujours y mettre la clé
 				((Conteneur) cachette).ajouteObjet(cle);
-				placee = true; // C'est bon, on sort de la boucle
+				placee = true;
 			}
 		}
 	}
@@ -257,13 +222,12 @@ public class Jeu {
 		gui.afficher("Tapez '?' pour obtenir de l'aide.");
 		gui.afficher();
 		afficherLocalisation();
-		afficherCommandesPossibles(); // <--- AJOUTE CETTE LIGNE ICI
+		afficherCommandesPossibles();
 		gui.afficher();
 		gui.afficheImage(zoneCourante.nomImage());
 	}
 
 	private void afficherCommandesPossibles() {
-		// Règle du cahier des charges : dans le noir, on ne voit presque rien
 		if (!eclairageActif && !zoneCourante.getNom().equalsIgnoreCase("salon")) {
 			gui.afficher(
 					"Il fait nuit noire... Les commandes sont invisibles. Vous pouvez seulement tâtonner pour vous déplacer (N, S, E, O).");
@@ -278,7 +242,7 @@ public class Jeu {
 		cmds.add("Inventaire (I)");
 		cmds.add("Prendre (P) / Déposer (D)");
 		cmds.add("Ouvrir (OU)");
-		// rajouter commandes manquante
+		// TODO rajouter commandes manquante
 
 		// Commandes contextuelles liées à la zone
 		String nomZone = zoneCourante.getNom().toLowerCase();
@@ -299,7 +263,6 @@ public class Jeu {
 				cmds.add("Miroir (M)");
 			}
 		}
-		// On ajoute "Ouvrir" de manière générale si la lumière est allumée
 		cmds.add("Ouvrir (OU)");
 
 		gui.afficher("Commandes disponibles : " + String.join(", ", cmds));
@@ -309,11 +272,32 @@ public class Jeu {
 		verifieGUI();
 		gui.afficher("> " + texteSaisi + "\n");
 
-		// CORRECTION : Séparer la commande de l'argument (ex: "PRENDRE cle" ->
-		// mots[0]="PRENDRE", mots[1]="cle")
 		String[] mots = texteSaisi.trim().split(" ", 2);
 		String commande = mots[0].toUpperCase();
 		String argument = (mots.length > 1) ? mots[1] : "";
+
+		if (this.etatJeu != EtatJeu.EN_COURS) {
+			if (commande.equals("OUI") || commande.equals("O")) {
+				relancerPartie();
+			} else if (commande.equals("NON") || commande.equals("N") || commande.equals("QUITTER")
+					|| commande.equals("Q")) {
+				terminer();
+			} else {
+				gui.afficher("La partie est terminée. Voulez-vous recommencer ? (OUI / NON)");
+			}
+			return;
+		}
+		
+		if (this.enigmeEnCours != null) {
+			if (commande.equals("REP") || commande.equals("REPONDRE")) {
+				traiterReponse(argument);
+			} else {
+				gui.afficher("Le fantôme du Baron bloque votre chemin. Vous ne pouvez rien faire d'autre !");
+				gui.afficher("Le Baron murmure à nouveau : " + enigmeEnCours.getQuestion());
+				gui.afficher("(Tapez REPONDRE <votre_texte>)");
+			}
+			return; 
+		}
 
 		switch (commande) {
 		case "?", "AIDE" -> afficherAide();
@@ -348,29 +332,35 @@ public class Jeu {
 		case "CMD2", "COMMANDE 2" -> allumerFeu();
 		case "I", "INVENTAIRE" -> ouvrirInventaire();
 		case "M", "MIROIR" -> utiliserLeMiroir();
+		case "REP", "REPONDRE" -> {
+			if (argument.isEmpty()) {
+				gui.afficher("Que voulez-vous répondre ?");
+			} else {
+				traiterReponse(argument);
+			}
+		}
 		case "TP", "TELEPORTER" -> {
-			
 			teleporter(argument);
 		}
 		case "SAUV", "SAUVEGARDER" -> sauvegarderLaPartie();
 		case "T", "TEST" -> testPartieGagnante();
 		case "AB", "ABANDON" -> abandonSansSauv();
 		case "Q", "QUITTER" -> terminer();
-		
+
 		default -> gui.afficher("Commande inconnue");
 		}
 	}
-	
+
 	private void lancementStress(String argument) {
-		int nbParties = 100; 
+		int nbParties = 100;
 
 		if (argument != null && !argument.trim().isEmpty()) {
 			try {
 				nbParties = Integer.parseInt(argument.trim());
-				
+
 				if (nbParties < 1 || nbParties > 100) {
 					gui.afficher("Erreur : Le nombre de parties doit être compris entre 1 et 100.");
-					return; 
+					return;
 				}
 			} catch (NumberFormatException e) {
 				gui.afficher("Erreur : '" + argument + "' n'est pas un nombre valide.");
@@ -381,6 +371,24 @@ public class Jeu {
 		gui.afficher("Lancement du Stress Test (" + nbParties + " parties)... Regardez la console !");
 		TestAutomatique testeur = new TestAutomatique();
 		testeur.executerStressTest(nbParties, this.gui);
+	}
+
+	private void relancerPartie() {
+		gui.afficher("========== NOUVELLE PARTIE =========");
+
+		this.joueur = new Joueur("Elias Cole");
+		this.historiqueZones.clear();
+		this.manoir = new Manoir();
+		this.eclairageActif = false;
+		this.chemineActif = false;
+		this.miroirActive = false;
+		this.fragmentsDetruits = 0;
+		this.etatJeu = EtatJeu.EN_COURS;
+
+		initialiserObjets();
+
+		this.zoneCourante = manoir.getZoneDepart();
+		afficherMessageDeBienvenue();
 	}
 
 	private void abandonSansSauv() {
@@ -427,22 +435,23 @@ public class Jeu {
 			return;
 		}
 
-		// --- NOUVEAU : CAS SPÉCIFIQUE DU FANTÔME / CORPS DU BARON ---
+
+		// CAS SPÉCIFIQUE DU FANTÔME / CORPS DU BARON
 		if (conteneur.getNom().equalsIgnoreCase("CorpsBaron")) {
 			if (conteneur.estVerrouille()) {
 				gui.afficher("Une aura glaciale vous repousse. Le fantôme du Baron apparaît !");
 				gui.afficher("Il ne vous laissera pas approcher de son corps si facilement...");
 
-				// C'est ici que tu dois appeler ton énigme.
-				// Exemple (à adapter selon le code exact de ta classe CorpsBaron) :
-				// jeu.environnement.CorpsBaron baron = (jeu.environnement.CorpsBaron)
-				// conteneur;
-				// gui.afficher("Énigme : " + baron.getEnigme().getQuestion());
-				// TODO
-				gui.afficher("(Tapez votre réponse avec une commande spécifique, ex: REPONDRE <votre_texte>)");
-				revelerContenu(conteneur);
-				rafraichirImage();
-				return; // On arrête l'exécution ici pour ne pas chercher de clé !
+				enigmeEnCours = banqueEnigmes.obtientEnigmeAleatoire();
+				
+				if (enigmeEnCours != null) {
+					gui.afficher("Le Baron murmure : " + enigmeEnCours.getQuestion());
+					gui.afficher("(Tapez votre réponse avec : REPONDRE <votre_texte>)");
+					
+				}
+
+				
+				return;
 			}
 		}
 
@@ -462,7 +471,7 @@ public class Jeu {
 						// NOUVEAU : La clé est consommée (elle reste dans la serrure)
 						joueur.getInventaire().retire(cle.getNom());
 
-						// --- LA MAGIE OPÈRE ICI ---
+
 						revelerContenu(conteneur);
 						rafraichirImage();
 						break;
@@ -472,14 +481,12 @@ public class Jeu {
 
 			if (!cleTrouvee) {
 				if (conteneur.getNom().equalsIgnoreCase("Coffre")) {
-					// 1. On déclenche le piège une seule fois
-					joueur.perdreVie(); // (ou conteneur.declenchePiege(joueur); selon comment tu l'as nommé)
+					joueur.perdreVie();
 
 					gui.afficher(
 							"Vous tentez de forcer la serrure... Un mécanisme se déclenche ! Piège ! Il vous reste "
 									+ joueur.getVies() + " vies.");
 
-					// 2. On vérifie si c'était la dernière vie avant d'appeler finDePartie !
 					if (joueur.getVies() <= 0) {
 						finDePartie();
 					}
@@ -488,16 +495,36 @@ public class Jeu {
 				}
 			}
 		} else {
-			// Si le meuble n'est pas verrouillé de base (ou a déjà été déverrouillé)
 			gui.afficher("Vous ouvrez " + argument + ".");
 
-			// --- LA MAGIE OPÈRE ICI AUSSI ---
 			revelerContenu(conteneur);
 		}
 	}
+	
+	public void traiterReponse(String reponseJoueur) {
+		if (enigmeEnCours == null) {
+			gui.afficher("Il n'y a aucune énigme à résoudre pour le moment.");
+			return;
+		}
 
+		if (enigmeEnCours.verifierReponse(reponseJoueur)) {
+			gui.afficher("Le Baron pousse un hurlement et s'évapore... Le passage est libre.");
+
+			Conteneur corpsBaron = zoneCourante.getConteneur("CorpsBaron");
+			if (corpsBaron != null) {
+				corpsBaron.setVerrouille(false);
+				
+				revelerContenu(corpsBaron);
+				rafraichirImage();
+			}
+
+			this.enigmeEnCours = null; 
+		} else {
+			gui.afficher("Le Baron ricane : 'Ce n'est pas la bonne réponse...' L'aura vous glace le sang.");
+		}
+	}
+	
 	private void revelerContenu(Conteneur conteneur) {
-		// Si le meuble est déjà vide
 		if (conteneur.getContenu().isEmpty()) {
 			gui.afficher("Vous regardez à l'intérieur... c'est vide.");
 			return;
@@ -506,18 +533,16 @@ public class Jeu {
 		List<String> objetsPris = new ArrayList<>();
 		Iterator<ObjetJeu> it = conteneur.getContenu().iterator();
 
-		// On parcourt les objets du conteneur
 		while (it.hasNext()) {
 			ObjetJeu obj = it.next();
 
-			// On vérifie s'il reste de la place dans l'inventaire du joueur
 			if (!joueur.getInventaire().estPlein()) {
-				joueur.getInventaire().ajoute(obj); // Va directement dans le sac
+				joueur.getInventaire().ajoute(obj);
 				objetsPris.add(obj.getNom());
-				it.remove(); // Disparaît du conteneur
+				it.remove();
 			} else {
 				gui.afficher("Votre sac est plein ! Certains objets sont restés dans : " + conteneur.getNom() + ".");
-				break; // On arrête le ramassage automatique
+				break;
 			}
 		}
 
@@ -531,7 +556,6 @@ public class Jeu {
 	}
 
 	private void prendreObjet(String nomObjet) {
-		// CORRECTION : On vérifie si le sac est plein (pas s'il est vide)
 		if (joueur.getInventaire().estPlein()) {
 			gui.afficher("Votre sac à dos est plein ! Capacité maximale de 5 objets atteinte.");
 			return;
@@ -541,7 +565,8 @@ public class Jeu {
 		if (objet != null) {
 			joueur.getInventaire().ajoute(objet);
 			gui.afficher("Vous avez pris : " + nomObjet + ".");
-			gui.afficher("Le fantome du baron est present et peut s'amuser a deplacer les autres objet présent dans la piece");
+			gui.afficher(
+					"Le fantome du baron est present et peut s'amuser a deplacer les autres objet présent dans la piece");
 			rafraichirImage();
 		} else {
 			gui.afficher("Cet objet n'est pas ici.");
@@ -549,90 +574,84 @@ public class Jeu {
 	}
 
 	private void utiliserLeMiroir() {
-	    if (!zoneCourante.getNom().equalsIgnoreCase("salle_de_bain")) {
-	        gui.afficher("Il n'y a pas de miroir magique ici.");
-	        return;
-	    }
+		if (!zoneCourante.getNom().equalsIgnoreCase("salle_de_bain")) {
+			gui.afficher("Il n'y a pas de miroir magique ici.");
+			return;
+		}
 
-	    // On vérifie si le joueur a le médaillon (avec ou sans accent)
-	    boolean aMedaillon = false;
-	    for (ObjetJeu obj : joueur.getInventaire().getObjets()) {
-	        if (obj.getNom().toLowerCase().contains("medaillon") || obj.getNom().toLowerCase().contains("médaillon")) {
-	            aMedaillon = true;
-	            break;
-	        }
-	    }
+		boolean aMedaillon = false;
+		for (ObjetJeu obj : joueur.getInventaire().getObjets()) {
+			if (obj.getNom().toLowerCase().contains("medaillon") || obj.getNom().toLowerCase().contains("médaillon")) {
+				aMedaillon = true;
+				break;
+			}
+		}
 
-	    if (!aMedaillon) {
-	        gui.afficher("Le miroir reste sombre. Une force ancienne semble exiger un artefact pour s'éveiller...");
-	        return;
-	    }
+		if (!aMedaillon) {
+			gui.afficher("Le miroir reste sombre. Une force ancienne semble exiger un artefact pour s'éveiller...");
+			return;
+		}
 
-	    // --- LA MAGIE S'ACTIVE ---
-	    this.miroirActive = true; 
-	    gui.afficher("Vous présentez le Médaillon. La surface du miroir se met à onduler comme de l'eau !");
-	    
-	    // On affiche les destinations (comme dans le message précédent)
-	    List<Zone> visitees = getZonesVisitees();
-	    List<String> noms = new ArrayList<>();
-	    for(Zone z : visitees) noms.add(z.getNom());
-	    
-	    gui.afficher("Destinations possibles : " + String.join(", ", noms));
-	    gui.afficher("(Tapez TELEPORTER <nom>)");
-	    
-	    // On met à jour les commandes pour afficher le TP
-	    afficherCommandesPossibles();
+		this.miroirActive = true;
+		gui.afficher("Vous présentez le Médaillon. La surface du miroir se met à onduler comme de l'eau !");
+
+		List<Zone> visitees = getZonesVisitees();
+		List<String> noms = new ArrayList<>();
+		for (Zone z : visitees)
+			noms.add(z.getNom());
+
+		gui.afficher("Destinations possibles : " + String.join(", ", noms));
+		gui.afficher("(Tapez TELEPORTER <nom>)");
+
+		afficherCommandesPossibles();
 	}
-	
+
 	private void teleporter(String destinationVoulue) {
 		if (!zoneCourante.getNom().equalsIgnoreCase("salle_de_bain")) {
-	        gui.afficher("Vous ne pouvez pas invoquer la magie du miroir en dehors de la salle de bain.");
-	        return;
-	    }
+			gui.afficher("Vous ne pouvez pas invoquer la magie du miroir en dehors de la salle de bain.");
+			return;
+		}
 
-	    if (!miroirActive) {
-	        gui.afficher("Le miroir est éteint. Vous devez d'abord utiliser le miroir (M) avec le médaillon.");
-	        return;
-	    }
-	    
-	    if (destinationVoulue.isEmpty()) {
-	        gui.afficher("Où voulez-vous vous téléporter ? (Ex: TELEPORTER salon)");
-	        return;
-	    }
+		if (!miroirActive) {
+			gui.afficher("Le miroir est éteint. Vous devez d'abord utiliser le miroir (M) avec le médaillon.");
+			return;
+		}
 
+		if (destinationVoulue.isEmpty()) {
+			gui.afficher("Où voulez-vous vous téléporter ? (Ex: TELEPORTER salon)");
+			return;
+		}
 
-	    // On formate la saisie (si le joueur tape "grand couloir", on transforme en "grand_couloir")
-	    String nomFormate = destinationVoulue.replace(" ", "_");
+		String nomFormate = destinationVoulue.replace(" ", "_");
 
-	    // On cherche si la zone demandée fait partie des zones visitées
-	    jeu.environnement.Zone destinationFinale = null;
-	    for (jeu.environnement.Zone z : getZonesVisitees()) {
-	        if (z.getNom().equalsIgnoreCase(nomFormate) || z.getNom().equalsIgnoreCase(destinationVoulue)) {
-	            destinationFinale = z;
-	            break;
-	        }
-	    }
+		jeu.environnement.Zone destinationFinale = null;
+		for (jeu.environnement.Zone z : getZonesVisitees()) {
+			if (z.getNom().equalsIgnoreCase(nomFormate) || z.getNom().equalsIgnoreCase(destinationVoulue)) {
+				destinationFinale = z;
+				break;
+			}
+		}
 
-	    if (destinationFinale == null) {
-	        gui.afficher("Le miroir est flou... Vous ne pouvez vous téléporter que vers une pièce déjà visitée, et le nom doit être exact.");
-	        return;
-	    }
+		if (destinationFinale == null) {
+			gui.afficher(
+					"Le miroir est flou... Vous ne pouvez vous téléporter que vers une pièce déjà visitée, et le nom doit être exact.");
+			return;
+		}
 
-	    if (destinationFinale == zoneCourante) {
-	        gui.afficher("Vous y êtes déjà !");
-	        return;
-	    }
+		if (destinationFinale == zoneCourante) {
+			gui.afficher("Vous y êtes déjà !");
+			return;
+		}
 
-	    // --- LE DÉPLACEMENT MAGIQUE ---
-	    gui.afficher("Vous touchez la surface du miroir... Le monde tourne autour de vous !");
-	    
-	    historiqueZones.push(zoneCourante); // On sauvegarde la salle de bain dans l'historique
-	    zoneCourante = destinationFinale;   // On change de pièce !
-	    
-	    afficherLocalisation();
-	    afficherCommandesPossibles();
-	    gui.afficher();
-	    rafraichirImage();
+		gui.afficher("Vous touchez la surface du miroir... Le monde tourne autour de vous !");
+
+		historiqueZones.push(zoneCourante);
+		zoneCourante = destinationFinale;
+
+		afficherLocalisation();
+		afficherCommandesPossibles();
+		gui.afficher();
+		rafraichirImage();
 	}
 
 	private void finDePartie() {
@@ -646,9 +665,11 @@ public class Jeu {
 			gui.afficher("Fin de la partie.");
 		}
 
-		if (this.etatJeu == EtatJeu.DEFAITE || this.etatJeu == EtatJeu.VICTOIRE) {
+		if (this.etatJeu == EtatJeu.DEFAITE || this.etatJeu != EtatJeu.VICTOIRE) {
 			gui.afficher("--- GAME OVER ---");
 		}
+		gui.afficher("La partie est terminée. Voulez-vous recommencer ? (OUI / NON)");
+
 	}
 
 	private void ouvrirInventaire() {
@@ -665,8 +686,6 @@ public class Jeu {
 		gui.afficher();
 		gui.afficher("Les commandes autorisées sont :");
 		gui.afficher();
-		// Attention: assure-toi que Commande.toutesLesDescriptions() existe bien dans
-		// ton code !
 		gui.afficher(Commande.toutesLesDescriptions().toString());
 		gui.afficher();
 	}
@@ -678,25 +697,19 @@ public class Jeu {
 
 			Zone pieceBureau = manoir.obtientZone("bureau");
 
-			// On récupère le meuble/verrou qui bloque l'accès
-			// (Remplace "Bureau" par "Armoire" si c'est vraiment l'armoire qui bloque la
-			// porte de la pièce)
 			Conteneur porteVerrouillee = pieceBureau.getConteneur("Bureau");
 
-			// Si le verrou a été activé lors de la génération de la partie
 			if (porteVerrouillee != null && porteVerrouillee.estVerrouille()) {
 
 				boolean cleTrouvee = false;
 
-				// On fouille dans le sac du joueur
 				for (ObjetJeu obj : joueur.getInventaire().getObjets()) {
 					if (obj instanceof Cle) {
 						Cle cle = (Cle) obj;
 
-						// On teste si c'est la bonne clé avec notre méthode de Conteneur
 						if (porteVerrouillee.deverrouillerAvecCle(cle, joueur)) {
 							cleTrouvee = true;
-							joueur.getInventaire().retire(cle.getNom()); // On consomme la clé
+							joueur.getInventaire().retire(cle.getNom());
 							gui.afficher("CLIC ! Vous déverrouillez la porte du bureau avec la " + cle.getNom()
 									+ " et vous entrez.");
 							break;
@@ -704,11 +717,10 @@ public class Jeu {
 					}
 				}
 
-				// Si le joueur n'a pas la bonne clé dans son sac
 				if (!cleTrouvee) {
 					gui.afficher(
 							"La porte menant au SUD (le bureau) est fermée à clé. Il vous faut la bonne clé pour entrer.");
-					return; // ON BLOQUE LE DÉPLACEMENT EN ARRÊTANT LA MÉTHODE ICI !
+					return;
 				}
 			}
 		}
@@ -720,6 +732,27 @@ public class Jeu {
 		} else {
 			historiqueZones.push(zoneCourante);
 			zoneCourante = nouvelle;
+			if (zoneCourante.getNom().equalsIgnoreCase("cave")) {
+				boolean possedeEchelle = false;
+				for (jeu.objets.ObjetJeu obj : joueur.getInventaire().getObjets()) {
+					if (obj.getNom().toLowerCase().contains("echelle")
+							|| obj.getNom().toLowerCase().contains("échelle")) {
+						possedeEchelle = true;
+						break;
+					}
+				}
+
+				if (!possedeEchelle) {
+					gui.afficher(zoneCourante.descriptionLongue());
+					gui.afficheImage(zoneCourante.nomImage());
+
+					this.etatJeu = EtatJeu.DEFAITE;
+					gui.afficher("Vous avez sauté dans la cave... mais la trappe se referme au-dessus de vous !");
+					gui.afficher("Sans échelle pour remonter, vous êtes coincé ici pour l'éternité.");
+					finDePartie();
+					return;
+				}
+			}
 			afficherLocalisation();
 			gui.afficher();
 			afficherCommandesPossibles();
@@ -797,6 +830,7 @@ public class Jeu {
 			this.etatJeu = EtatJeu.VICTOIRE;
 			gui.afficher(
 					"Félicitations ! Les 3 fragments d'âme ont été détruits. Le Baron Cole est libéré. Vous avez gagné !");
+			gui.afficheImage("salon/salon_victoire");
 			finDePartie();
 		}
 	}
@@ -847,6 +881,7 @@ public class Jeu {
 		verifieGUI();
 		gui.afficher("Au revoir...");
 		gui.enable(false);
+		System.exit(0);
 	}
 
 	public GUI getGui() {
@@ -863,15 +898,12 @@ public class Jeu {
 		StringBuilder sb = new StringBuilder();
 		String nomZone = zoneCourante.getNom().toLowerCase();
 
-		// 1. GESTION DU DOSSIER (ex: "salle_de_bain/", "chambre1/")
 		String nomDossier = nomZone.replace(" ", "_");
 		sb.append(nomDossier).append("/");
 
-		// 2. GESTION DES PRÉFIXES SPÉCIFIQUES SELON LA PIÈCE
 		switch (nomZone) {
 		case "bibliothèque":
 			sb.append("bibliothèque");
-			// Le passage vers la cave est révélé vers le SUD, on vérifie s'il existe
 			boolean passageOuvert = (zoneCourante.obtientSortie(Direction.SUD) != null);
 			sb.append(passageOuvert ? "_passageOuvert" : "_passageFermé");
 			sb.append(eclairageActif ? "_ON" : "_OFF");
@@ -908,7 +940,6 @@ public class Jeu {
 		case "cave":
 			sb.append("cave");
 			sb.append(eclairageActif ? "_ON" : "_OFF");
-			// Règle spécifique : on identifie l'objet lié au Baron
 			Conteneur corps = zoneCourante.getConteneur("CorpsBaron");
 			if (corps != null && !corps.getContenu().isEmpty()) {
 				String nomObjBaron = corps.getContenu().get(0).getNom().toLowerCase();
@@ -923,25 +954,21 @@ public class Jeu {
 				else if (nomObjBaron.contains("plume"))
 					sb.append("_plume");
 			}
-			// On retourne la chaîne ici car la cave n'affiche pas les objets au sol !
 			return sb.toString();
 
 		default:
-			// Pour cuisine, salle_de_bain, grand_couloir, petit_couloir
 			sb.append(nomZone.replace(" ", "_"));
 			sb.append(eclairageActif ? "_ON" : "_OFF");
 			break;
 		}
 
 		if (eclairageActif) {
-			// 3. AJOUT DES OBJETS AU SOL (Pour toutes les pièces sauf la cave)
 			List<ObjetJeu> objetsAuSol = zoneCourante.getObjetsPresents();
 			if (objetsAuSol != null && !objetsAuSol.isEmpty()) {
 				List<String> motsClefs = new ArrayList<>();
 
 				for (ObjetJeu obj : objetsAuSol) {
 					String nom = obj.getNom().toLowerCase();
-					// On convertit le nom de l'objet brut en mot-clé pour le nom de fichier
 					if (nom.contains("bois"))
 						motsClefs.add("bois");
 					else if (nom.contains("cle") || nom.contains("clé"))
@@ -950,11 +977,10 @@ public class Jeu {
 						motsClefs.add("echelle");
 					else if (nom.contains("medaillon") || nom.contains("médaillon"))
 						motsClefs.add("medaillon");
-					// Ajoute d'autres conditions ici si tu as de nouveaux objets posables au sol
 				}
 
 				// TRI ALPHABÉTIQUE OBLIGATOIRE (ex: "_cle_echelle" et pas "_echelle_cle")
-				java.util.Collections.sort(motsClefs);
+				Collections.sort(motsClefs);
 
 				for (String mot : motsClefs) {
 					sb.append("_").append(mot);
@@ -964,22 +990,44 @@ public class Jeu {
 
 		return sb.toString();
 	}
-	
-	
+
 	private List<Zone> getZonesVisitees() {
-	    List<Zone> visitees = new ArrayList<>();
-	    
-	    visitees.add(zoneCourante);
-	    
-	    for (Zone z : historiqueZones) {
-	        if (!visitees.contains(z)) {
-	            visitees.add(z);
-	        }
-	    }
-	    return visitees;
+		List<Zone> visitees = new ArrayList<>();
+
+		visitees.add(zoneCourante);
+
+		for (Zone z : historiqueZones) {
+			if (!visitees.contains(z)) {
+				visitees.add(z);
+			}
+		}
+		return visitees;
 	}
-	
+
 	public EtatJeu getEtatJeu() {
 		return this.etatJeu;
+	}
+
+	public void voirPositionObjetConsole(List<Zone> toutesLesZones) {
+
+		System.out.println("\n=== RÉCAPITULATIF DES EMPLACEMENTS (TRICHE) ===");
+		for (Zone z : toutesLesZones) {
+			String objetsSol = z.listerObjets();
+			if (!objetsSol.equals("Il n'y a aucun objet visible ici.")) {
+				System.out.println("[SOL] " + z.getNom() + " -> " + objetsSol);
+			}
+
+			for (jeu.environnement.Conteneur c : z.getConteneurs()) {
+				if (!c.getContenu().isEmpty()) {
+					java.util.List<String> nomsObjets = new java.util.ArrayList<>();
+					for (ObjetJeu obj : c.getContenu()) {
+						nomsObjets.add(obj.getNom());
+					}
+					System.out.println("[MEUBLE] " + z.getNom() + " (dans " + c.getNom() + ") -> "
+							+ String.join(", ", nomsObjets));
+				}
+			}
+		}
+		System.out.println("===============================================\n");
 	}
 }

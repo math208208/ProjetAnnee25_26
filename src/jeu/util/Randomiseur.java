@@ -22,10 +22,7 @@ public class Randomiseur {
 		return tousLesFragments.subList(0, 3); 
 	}
     
-	/**
-	 * Distribue une liste d'objets sur le sol des zones fournies.
-	 * Règle stricte : Maximum 2 objets sur le sol par zone.
-	 */
+
 	public void distribuerObjetsSurSol(List<ObjetJeu> objets, List<Zone> zones) {
 		if (objets == null || zones == null || zones.isEmpty()) {
 			return;
@@ -33,12 +30,11 @@ public class Randomiseur {
 
 		for (ObjetJeu obj : objets) {
 			boolean place = false;
-			int securite = 0; // Pour éviter une boucle infinie s'il n'y a plus aucune place
+			int securite = 0; 
 			
 			while (!place && securite < 100) {
 				Zone zoneAleatoire = zones.get(random.nextInt(zones.size()));
 				
-				// On vérifie qu'il y a moins de 2 objets sur le sol
 				if (zoneAleatoire.getNombreObjetsSurSol() < 2) {
 					zoneAleatoire.ajouteObjet(obj);
 					place = true;

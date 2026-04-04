@@ -20,7 +20,4 @@ public class Meuble {
         return type;
     }
 
-    public void utilise(Joueur joueur, Jeu jeu) {
-        // La logique sera gérée par la classe Jeu selon le TypeMeuble
-    }
 }

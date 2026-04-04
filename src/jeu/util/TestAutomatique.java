@@ -56,7 +56,7 @@ public class TestAutomatique {
 		commandes.addAll(Arrays.asList(parcoursOuverture));
 
 		// PHASE 4 : LA CAVE ET LA VICTOIRE
-		commandes.addAll(Arrays.asList("E", "OUVRIR livre", "S", "OUVRIR corpsBaron", "N", "O", "S", "B")); // BRÛLER TOUT !
+		commandes.addAll(Arrays.asList("E", "OUVRIR livre", "S", "OUVRIR corpsBaron","rep test", "N", "O", "S", "B")); // BRÛLER TOUT !
 
 		return commandes;
 	}
@@ -72,7 +72,6 @@ public class TestAutomatique {
 	public void executerSequenceVictoire(Jeu jeu) {
 		System.out.println("Lancement du Speedrun Automatique...");
 		
-		// On récupère tes commandes
 		List<String> commandes = getTesCommandes(); 
 
 		new Thread(() -> {
@@ -89,9 +88,7 @@ public class TestAutomatique {
 		}).start();
 	}
 
-	// ---------------------------------------------------------
 	// 3. LE NOUVEAU STRESS TEST (Lance N parties instantanément)
-	// ---------------------------------------------------------
 	public void executerStressTest(int nbTests, GUI guiActuelle) {
 		System.out.println("=== DÉBUT DU STRESS TEST (" + nbTests + " parties) ===");
 		int victoires = 0;
@@ -101,14 +98,12 @@ public class TestAutomatique {
 
 		for (int i = 0; i < nbTests; i++) {
 			Jeu partieTest = new Jeu();
-			partieTest.setGUI(guiActuelle); // On utilise l'interface actuelle
+			partieTest.setGUI(guiActuelle); 
 
-			// On exécute tout d'un coup, sans le Thread.sleep !
 			for (String cmd : commandes) {
 				partieTest.traiterCommande(cmd);
 			}
 
-			// On vérifie si on a gagné
 			if (partieTest.getEtatJeu() == EtatJeu.VICTOIRE) {
 				victoires++;
 			} else {

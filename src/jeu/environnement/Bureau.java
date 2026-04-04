@@ -5,7 +5,7 @@ import jeu.objets.Cle;
 
 public class Bureau extends Conteneur {
 	public Bureau(String nom, boolean estVerrouille, Cle cleRequise) {
-        super(nom, estVerrouille, cleRequise, false); // Le bureau nécessite une clé mais n'est pas piégé [cite: 63]
+        super(nom, estVerrouille, cleRequise, false); 
     }
 
     @Override

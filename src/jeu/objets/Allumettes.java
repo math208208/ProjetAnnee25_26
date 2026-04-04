@@ -5,7 +5,7 @@ import jeu.joueur.Joueur;
 
 public class Allumettes extends ObjetJeu {
 	public Allumettes(String nom, String description) {
-		super(nom, description, false); // N'est jamais un fragment
+		super(nom, description, false);
 	}
 	
 	@Override

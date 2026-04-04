@@ -9,7 +9,7 @@ public class CorpsBaron extends Conteneur {
     private Enigme enigme;
 
     public CorpsBaron(String nom, Enigme enigme) {
-        super(nom, true, null, false); // "Verrouillé" par l'énigme
+        super(nom, true, null, false); 
         this.enigme = enigme;
         this.enigmeResolue = false;
     }
@@ -20,7 +20,6 @@ public class CorpsBaron extends Conteneur {
 
     @Override
     public boolean ouvre(Joueur joueur) {
-        // L'ouverture déclenche une énigme [cite: 62]
         if (!enigmeResolue) {
             return false; 
         }

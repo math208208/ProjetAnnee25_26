@@ -9,10 +9,9 @@ public class Joueur {
 	private Inventaire inventaire;
 	private Set<String> zonesVisitees;
 
-	// Constructeur pour initialiser un nouveau joueur
 	public Joueur(String pseudo) {
 		this.pseudo = pseudo;
-		this.vies = 3; // Le joueur commence avec 3 vies 
+		this.vies = 3; 
 		this.inventaire = new Inventaire();
 		this.zonesVisitees = new HashSet<>();
 	}
@@ -31,11 +30,9 @@ public class Joueur {
 	}
 
 	public boolean possede(String nomObjet) {
-		// On délègue la vérification à l'inventaire
 		return this.inventaire.possede(nomObjet); 
 	}
 
-	// --- Getters et Setters ---
 	
 	public String getPseudo() {
 		return pseudo;

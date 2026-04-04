@@ -9,9 +9,8 @@ import jeu.objets.ObjetJeu;
 public class Inventaire {
 
 	private List<ObjetJeu> objets;
-	private int capaciteMax = 6; // Capacité maximale de 5 objets 
+	private int capaciteMax = 6; 
 
-	// Constructeur indispensable pour initialiser la liste
 	public Inventaire() {
 		this.objets = new ArrayList<>();
 	}
@@ -20,14 +19,13 @@ public class Inventaire {
 		if (verifierCapacite()) {
 			return this.objets.add(objet);
 		}
-		return false; // Refusé si le sac est plein
+		return false;
 	}
 
 	public boolean verifierCapacite() {
 		return this.objets.size() < this.capaciteMax;
 	}
 
-	// J'ajoute estPlein() car tu l'utilises dans la classe Jeu
 	public boolean estPlein() {
 		return this.objets.size() >= this.capaciteMax;
 	}
@@ -37,16 +35,15 @@ public class Inventaire {
 	}
 
 	public ObjetJeu retire(String nomObjet) {
-		// Utilisation d'un Iterator pour pouvoir supprimer un élément pendant qu'on parcourt la liste
 		Iterator<ObjetJeu> it = this.objets.iterator();
 		while (it.hasNext()) {
 			ObjetJeu obj = it.next();
 			if (obj.getNom().equalsIgnoreCase(nomObjet)) {
-				it.remove(); // Retire de la liste
-				return obj;  // Renvoie l'objet retiré
+				it.remove(); 
+				return obj;  
 			}
 		}
-		return null; // Objet non trouvé
+		return null; 
 	}
 
 	public boolean possedeBois() {

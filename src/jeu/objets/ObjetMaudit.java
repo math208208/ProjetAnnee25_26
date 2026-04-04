@@ -7,9 +7,8 @@ public class ObjetMaudit extends ObjetJeu {
 	
 	private TypeFragment typeFragment;
 
-	// Le constructeur demande maintenant le TypeFragment
 	public ObjetMaudit(String nom, String description, TypeFragment typeFragment) {
-		super(nom, description, true); // C'est toujours un fragment (true)
+		super(nom, description, true); 
 		this.typeFragment = typeFragment;
 	}
 

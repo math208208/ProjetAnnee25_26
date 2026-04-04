@@ -19,8 +19,6 @@ public class Manoir {
 	}
 
 	public void creerZones() {
-		// Le salon est la seule pièce où la lumière s'allume au début, le reste est
-		// dans le noir [cite: 320]
 		zones.put("salon", new Zone("salon", "le salon", "salon/salon_OFF_chemine_OFF", false));
 		zones.put("cuisine", new Zone("cuisine", "la cuisine", "cuisine/cuisine_OFF", false));
 		zones.put("bibliothèque", new Zone("bibliothèque", "la bibliothèque", "bibliothèque/bibliothèque_passageFermé_OFF", false));
@@ -33,8 +31,6 @@ public class Manoir {
 		zones.put("cave", new Zone("cave", "la cave", "cave/cave_OFF", false));
 
 		zoneDepart = zones.get("salon");
-		// On crée des "empreintes" de clés pour dire aux serrures quelle clé elles
-		// doivent accepter
 		Cle serrureCoffre = new Cle("cle_coffre", "", "");
 		Cle serrureBureau = new Cle("cle_bureau", "", "");
 		Cle serrureArmoire = new Cle("cle_armoire", "", "");
