@@ -69,7 +69,7 @@ public class Zone {
 	public void revelerSortieCachee(String action, Direction direction) {
 		Zone zoneCachee = sortiesCachees.get(action);
 		if (zoneCachee != null) {
-			ajouteSortie(direction, zoneCachee); 
+			ajouteSortie(direction, zoneCachee);
 		}
 	}
 
@@ -117,9 +117,9 @@ public class Zone {
 	public List<Conteneur> getConteneurs() {
 		return this.conteneurs;
 	}
-	
+
 	public int getNombreObjetsSurSol() {
-	    return objetsPresents.size();
+		return objetsPresents.size();
 	}
 
 	public String toString() {
@@ -129,11 +129,9 @@ public class Zone {
 	public String descriptionLongue() {
 		return "Vous êtes dans " + description + "\nSorties : " + sorties.keySet().toString();
 	}
-	
-	
+
 	public List<ObjetJeu> getObjetsPresents() {
-	    return this.objetsPresents;
+		return this.objetsPresents;
 	}
-	
 
 }

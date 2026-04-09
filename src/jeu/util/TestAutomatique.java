@@ -88,33 +88,5 @@ public class TestAutomatique {
 		}).start();
 	}
 
-	// 3. LE NOUVEAU STRESS TEST (Lance N parties instantanément)
-	public void executerStressTest(int nbTests, GUI guiActuelle) {
-		System.out.println("=== DÉBUT DU STRESS TEST (" + nbTests + " parties) ===");
-		int victoires = 0;
-		int defaites = 0;
-
-		List<String> commandes = getTesCommandes();
-
-		for (int i = 0; i < nbTests; i++) {
-			Jeu partieTest = new Jeu();
-			partieTest.setGUI(guiActuelle); 
-
-			for (String cmd : commandes) {
-				partieTest.traiterCommande(cmd);
-			}
-
-			if (partieTest.getEtatJeu() == EtatJeu.VICTOIRE) {
-				victoires++;
-			} else {
-				defaites++;
-				System.out.println("BLOCAGE à la partie n°" + (i + 1));
-			}
-		}
-
-		System.out.println("\n=== RÉSULTATS DU STRESS TEST ===");
-		System.out.println("Parties simulées : " + nbTests);
-		System.out.println("Victoires        : " + victoires);
-		System.out.println("Échecs           : " + defaites);
-	}
+	
 }

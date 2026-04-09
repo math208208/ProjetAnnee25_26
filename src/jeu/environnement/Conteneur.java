@@ -18,7 +18,7 @@ public abstract class Conteneur {
 
     public Conteneur(String nom, boolean estVerrouille, Cle cleRequise, boolean estPiege) {
         this.nom = nom;
-        this.estOuvert = !estVerrouille;
+        this.estOuvert = false;
         this.estVerrouille = estVerrouille;
         this.cleRequise = cleRequise;
         this.estPiege = estPiege;
@@ -63,7 +63,6 @@ public abstract class Conteneur {
     }
     public void setVerrouille(boolean estVerrouille) {
         this.estVerrouille = estVerrouille;
-        this.estOuvert = !estVerrouille; 
     }
 
     public void setCleRequise(Cle cleRequise) {
@@ -71,4 +70,12 @@ public abstract class Conteneur {
     }
     
     public abstract boolean deverrouillerAvecCle(Cle cle, Joueur joueur);
+
+	public void setEstOuvert(boolean estOuvert) {
+		this.estOuvert = estOuvert;
+	}
+
+
+	
+	
 }

@@ -1,6 +1,5 @@
 package jeu;
 
-import java.lang.annotation.Repeatable;
 
 public enum CommandeNonDirectionnelle implements Commande {
 	AIDE("?", "? (aide)"),

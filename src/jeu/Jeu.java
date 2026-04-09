@@ -14,6 +14,8 @@ import jeu.environnement.Manoir;
 import jeu.environnement.Zone;
 import jeu.joueur.Joueur;
 import jeu.objets.*;
+import jeu.sauvegarde.EtatPartie;
+import jeu.sauvegarde.GestionnaireSauvegardeJSON;
 import jeu.util.Randomiseur;
 import jeu.util.TestAutomatique;
 
@@ -29,18 +31,26 @@ public class Jeu {
 	private BanqueEnigmes banqueEnigmes = new BanqueEnigmes();
 	private Enigme enigmeEnCours;
 
+	private GestionnaireSauvegardeJSON gestionnaireSauvegarde = new GestionnaireSauvegardeJSON();
+	private boolean enMenuAccueil = true;
+	private String nomJoueurTemp = "";
+	private String etapeMenu = "DEMANDER_NOM";
+
 	private boolean eclairageActif = false;
 	private boolean chemineActif = false;
 	private boolean miroirActive = false;
 
 	public Jeu() {
-		joueur = new Joueur("Elias Cole");
-		historiqueZones = new ArrayDeque<>();
-		this.manoir = new Manoir();
-		initialiserObjets();
-		this.zoneCourante = manoir.getZoneDepart();
+
 		gui = null;
-		this.etatJeu = EtatJeu.EN_COURS;
+		
+		this.enMenuAccueil = true;
+		this.etapeMenu = "DEMANDER_NOM";
+	}
+
+	public void demarrerEcranTitre() {
+		gui.afficher("BIENVENUE DANS LE MANOIR");
+		gui.afficher("Veuillez entrer votre nom de joueur : ");
 	}
 
 	private void initialiserObjets() {
@@ -190,7 +200,6 @@ public class Jeu {
 
 	public void setGUI(GUI g) {
 		gui = g;
-		afficherMessageDeBienvenue();
 	}
 
 	private void verifieGUI() {
@@ -242,7 +251,9 @@ public class Jeu {
 		cmds.add("Inventaire (I)");
 		cmds.add("Prendre (P) / Déposer (D)");
 		cmds.add("Ouvrir (OU)");
-		// TODO rajouter commandes manquante
+		cmds.add("Quitter (Q)");
+		cmds.add("Abandonner (A)");
+		cmds.add("Sauvegarder (SAUV)");
 
 		// Commandes contextuelles liées à la zone
 		String nomZone = zoneCourante.getNom().toLowerCase();
@@ -276,6 +287,11 @@ public class Jeu {
 		String commande = mots[0].toUpperCase();
 		String argument = (mots.length > 1) ? mots[1] : "";
 
+		if (enMenuAccueil) {
+			gererMenuAccueil(texteSaisi.trim());
+			return;
+		}
+
 		if (this.etatJeu != EtatJeu.EN_COURS) {
 			if (commande.equals("OUI") || commande.equals("O")) {
 				relancerPartie();
@@ -287,7 +303,7 @@ public class Jeu {
 			}
 			return;
 		}
-		
+
 		if (this.enigmeEnCours != null) {
 			if (commande.equals("REP") || commande.equals("REPONDRE")) {
 				traiterReponse(argument);
@@ -296,7 +312,7 @@ public class Jeu {
 				gui.afficher("Le Baron murmure à nouveau : " + enigmeEnCours.getQuestion());
 				gui.afficher("(Tapez REPONDRE <votre_texte>)");
 			}
-			return; 
+			return;
 		}
 
 		switch (commande) {
@@ -307,9 +323,6 @@ public class Jeu {
 		case "E", "EST" -> allerEn(Direction.EST);
 		case "O", "OUEST" -> allerEn(Direction.OUEST);
 		case "B", "BRULER" -> bruler();
-		case "STRESS", "STRESSTEST" -> {
-			lancementStress(argument);
-		}
 		case "P", "PRENDRE" -> {
 			if (argument.isEmpty()) {
 				if (!eclairageActif && !zoneCourante.getNom().equalsIgnoreCase("salon")) {
@@ -342,8 +355,21 @@ public class Jeu {
 		case "TP", "TELEPORTER" -> {
 			teleporter(argument);
 		}
-		case "SAUV", "SAUVEGARDER" -> sauvegarderLaPartie();
-		case "T", "TEST" -> testPartieGagnante();
+		case "SAUV", "SAUVER" -> {
+			EtatPartie etat = new EtatPartie().capturer(this);
+			if (gestionnaireSauvegarde.sauvegarderPartie(etat, joueur.getPseudo())) {
+				gui.afficher("Partie sauvegardée avec succès dans joueur_" + joueur.getPseudo() + ".json !");
+			} else {
+				gui.afficher("Erreur lors de la sauvegarde.");
+			}
+		}
+		case "T", "TEST" -> {
+			if(zoneCourante.getNom().equalsIgnoreCase("salon")) {
+				testPartieGagnante();
+			}else {
+				gui.afficher("Il faut être dans le salon pour activer le test");
+			}
+		}
 		case "AB", "ABANDON" -> abandonSansSauv();
 		case "Q", "QUITTER" -> terminer();
 
@@ -351,27 +377,6 @@ public class Jeu {
 		}
 	}
 
-	private void lancementStress(String argument) {
-		int nbParties = 100;
-
-		if (argument != null && !argument.trim().isEmpty()) {
-			try {
-				nbParties = Integer.parseInt(argument.trim());
-
-				if (nbParties < 1 || nbParties > 100) {
-					gui.afficher("Erreur : Le nombre de parties doit être compris entre 1 et 100.");
-					return;
-				}
-			} catch (NumberFormatException e) {
-				gui.afficher("Erreur : '" + argument + "' n'est pas un nombre valide.");
-				return;
-			}
-		}
-
-		gui.afficher("Lancement du Stress Test (" + nbParties + " parties)... Regardez la console !");
-		TestAutomatique testeur = new TestAutomatique();
-		testeur.executerStressTest(nbParties, this.gui);
-	}
 
 	private void relancerPartie() {
 		gui.afficher("========== NOUVELLE PARTIE =========");
@@ -403,18 +408,6 @@ public class Jeu {
 		testeur.executerSequenceVictoire(this);
 	}
 
-	private void sauvegarderLaPartie() {
-		gui.afficher("Sauvegarde de la partie en cours...");
-		jeu.sauvegarde.EtatPartie etatActuel = new jeu.sauvegarde.EtatPartie().capturer(this);
-		jeu.sauvegarde.GestionnaireSauvegardeJSON gestionnaire = new jeu.sauvegarde.GestionnaireSauvegardeJSON();
-
-		boolean succes = gestionnaire.sauvegarderPartie(etatActuel, joueur.getPseudo());
-		if (succes) {
-			gui.afficher("Partie sauvegardée avec succès !");
-		} else {
-			gui.afficher("Erreur lors de la sauvegarde.");
-		}
-	}
 
 	private void ouvrir(String argument) {
 		// 1. LE PASSAGE SECRET DE LA BIBLIOTHÈQUE
@@ -435,7 +428,6 @@ public class Jeu {
 			return;
 		}
 
-
 		// CAS SPÉCIFIQUE DU FANTÔME / CORPS DU BARON
 		if (conteneur.getNom().equalsIgnoreCase("CorpsBaron")) {
 			if (conteneur.estVerrouille()) {
@@ -443,14 +435,13 @@ public class Jeu {
 				gui.afficher("Il ne vous laissera pas approcher de son corps si facilement...");
 
 				enigmeEnCours = banqueEnigmes.obtientEnigmeAleatoire();
-				
+
 				if (enigmeEnCours != null) {
 					gui.afficher("Le Baron murmure : " + enigmeEnCours.getQuestion());
 					gui.afficher("(Tapez votre réponse avec : REPONDRE <votre_texte>)");
-					
+
 				}
 
-				
 				return;
 			}
 		}
@@ -470,7 +461,6 @@ public class Jeu {
 
 						// NOUVEAU : La clé est consommée (elle reste dans la serrure)
 						joueur.getInventaire().retire(cle.getNom());
-
 
 						revelerContenu(conteneur);
 						rafraichirImage();
@@ -495,12 +485,15 @@ public class Jeu {
 				}
 			}
 		} else {
+			conteneur.setEstOuvert(true);
+			
 			gui.afficher("Vous ouvrez " + argument + ".");
-
 			revelerContenu(conteneur);
+			
+			rafraichirImage();
 		}
 	}
-	
+
 	public void traiterReponse(String reponseJoueur) {
 		if (enigmeEnCours == null) {
 			gui.afficher("Il n'y a aucune énigme à résoudre pour le moment.");
@@ -513,17 +506,17 @@ public class Jeu {
 			Conteneur corpsBaron = zoneCourante.getConteneur("CorpsBaron");
 			if (corpsBaron != null) {
 				corpsBaron.setVerrouille(false);
-				
+
 				revelerContenu(corpsBaron);
 				rafraichirImage();
 			}
 
-			this.enigmeEnCours = null; 
+			this.enigmeEnCours = null;
 		} else {
 			gui.afficher("Le Baron ricane : 'Ce n'est pas la bonne réponse...' L'aura vous glace le sang.");
 		}
 	}
-	
+
 	private void revelerContenu(Conteneur conteneur) {
 		if (conteneur.getContenu().isEmpty()) {
 			gui.afficher("Vous regardez à l'intérieur... c'est vide.");
@@ -1030,4 +1023,106 @@ public class Jeu {
 		}
 		System.out.println("===============================================\n");
 	}
+
+	private void gererMenuAccueil(String reponse) {
+		
+		if (etapeMenu.equals("DEMANDER_NOM")) {
+			if (reponse.isEmpty()) {
+				gui.afficher("Le nom ne peut pas être vide. Quel est votre nom ?");
+				return;
+			}
+			this.nomJoueurTemp = reponse;
+
+			if (gestionnaireSauvegarde.verifierExistenceFichier(nomJoueurTemp)) {
+				gui.afficher("Une sauvegarde a été trouvée pour '" + nomJoueurTemp + "'.");
+				gui.afficher("Voulez-vous la charger ? (OUI / NON)");
+				etapeMenu = "CONFIRMER_CHARGEMENT";
+			} else {
+				gui.afficher("Création d'un nouveau profil pour '" + nomJoueurTemp + "'...");
+				lancerLaPartie(nomJoueurTemp, false);
+			}
+
+		} else if (etapeMenu.equals("CONFIRMER_CHARGEMENT")) {
+			if (reponse.equalsIgnoreCase("OUI") || reponse.equalsIgnoreCase("O")) {
+				lancerLaPartie(nomJoueurTemp, true);
+			} else if (reponse.equalsIgnoreCase("NON") || reponse.equalsIgnoreCase("N")) {
+				gui.afficher("Création d'une nouvelle partie (la sauvegarde sera écrasée à la prochaine sauvegarde).");
+				lancerLaPartie(nomJoueurTemp, false);
+			} else {
+				gui.afficher("Veuillez répondre par OUI ou NON.");
+			}
+		}
+	}
+
+	private void lancerLaPartie(String nom, boolean chargerSauvegarde) {
+		this.enMenuAccueil = false;
+		this.joueur = new jeu.joueur.Joueur(nom);
+
+		this.historiqueZones = new ArrayDeque<>();
+		this.manoir = new Manoir();
+		this.fragmentsDetruits = 0;
+		initialiserObjets();
+		this.zoneCourante = manoir.getZoneDepart();
+		this.etatJeu = EtatJeu.EN_COURS;
+		
+		if (chargerSauvegarde) {
+			EtatPartie etat = gestionnaireSauvegarde.chargerPartie(nom);
+			if (etat != null) {
+				
+				etat.restaurer(this);
+				gui.afficher("Partie chargée avec succès ! Bon retour, " + nom + ".");
+			} else {
+				gui.afficher("Erreur lors du chargement. Démarrage d'une nouvelle partie...");
+				afficherMessageDeBienvenue();
+			}
+		} else {
+			
+			afficherMessageDeBienvenue();
+		}
+		gui.afficher(zoneCourante.descriptionLongue());
+		rafraichirImage();
+	}
+	
+	public Zone getZoneCourante() {
+		return zoneCourante;
+	}
+
+	public Joueur getJoueur() {
+		return joueur;
+	}
+
+	public boolean isEclairageActif() {
+		return eclairageActif;
+	}
+
+	public int getFragmentsDetruits() {
+		return fragmentsDetruits;
+	}
+
+	public void setFragmentsDetruits(int fragmentsDetruits) {
+		this.fragmentsDetruits = fragmentsDetruits;
+	}
+
+	public Manoir getManoir() {
+		return manoir;
+	}
+
+	public void setZoneCourante(Zone zoneCourante) {
+		this.zoneCourante = zoneCourante;
+	}
+
+	public void setEclairageActif(boolean eclairageActif) {
+		this.eclairageActif = eclairageActif;
+	}
+
+	public boolean isChemineActif() {
+		return chemineActif;
+	}
+
+	public void setChemineActif(boolean chemineActif) {
+		this.chemineActif = chemineActif;
+	}
+	
+	
+
 }
