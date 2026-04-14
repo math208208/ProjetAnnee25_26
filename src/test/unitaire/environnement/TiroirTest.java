@@ -2,33 +2,22 @@ package test.unitaire.environnement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import jeu.environnement.Tiroir;
+import jeu.joueur.Joueur;
+import jeu.objets.Cle;
 
 class TiroirTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
-
-	@BeforeEach
-	void setUp() throws Exception {
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
-	}
-
 	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
+	void tiroirEstOuvrableSansCleEtNonDeverrouillable() {
+		Tiroir tiroir = new Tiroir("Tiroir");
+		Joueur joueur = new Joueur("test");
 
+		assertFalse(tiroir.estVerrouille());
+		assertTrue(tiroir.ouvre(joueur));
+		assertTrue(tiroir.estOuvert());
+		assertFalse(tiroir.deverrouillerAvecCle(new Cle("cle", "", "Tiroir"), joueur));
+	}
 }

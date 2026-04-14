@@ -2,33 +2,57 @@ package test.unitaire.joueur;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
+
+import jeu.joueur.Inventaire;
+import jeu.joueur.Joueur;
+import jeu.objets.Cle;
 
 class JoueurTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
+	@Test
+	void joueurDemarreAvecPseudoTroisViesInventaireEtZonesVisitees() {
+		Joueur joueur = new Joueur("Alice");
 
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
-
-	@BeforeEach
-	void setUp() throws Exception {
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
+		assertEquals("Alice", joueur.getPseudo());
+		assertEquals(3, joueur.getVies());
+		assertNotNull(joueur.getInventaire());
+		assertTrue(joueur.getZonesVisitees().isEmpty());
 	}
 
 	@Test
-	void test() {
-		fail("Not yet implemented");
+	void perdreVieEtDiminuerPVNePassentPasSousZero() {
+		Joueur joueur = new Joueur("Alice");
+
+		joueur.perdreVie();
+		assertEquals(2, joueur.getVies());
+		joueur.diminuerPV(10);
+		assertEquals(0, joueur.getVies());
+		joueur.perdreVie();
+		assertEquals(0, joueur.getVies());
 	}
 
+	@Test
+	void possedeDelegueAInventaireEtSettersRemplacentLEtat() {
+		Joueur joueur = new Joueur("Alice");
+		Inventaire inventaire = new Inventaire();
+		inventaire.ajoute(new Cle("cle", "", ""));
+		Set<String> zones = new HashSet<>();
+		zones.add("salon");
+
+		joueur.setPseudo("Bob");
+		joueur.setVies(7);
+		joueur.setInventaire(inventaire);
+		joueur.setZonesVisitees(zones);
+
+		assertEquals("Bob", joueur.getPseudo());
+		assertEquals(7, joueur.getVies());
+		assertSame(inventaire, joueur.getInventaire());
+		assertSame(zones, joueur.getZonesVisitees());
+		assertTrue(joueur.possede("CLE"));
+		assertFalse(joueur.possede("bois"));
+	}
 }

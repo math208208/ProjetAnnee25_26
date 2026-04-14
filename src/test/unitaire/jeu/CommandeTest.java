@@ -2,33 +2,38 @@ package test.unitaire.jeu;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
+
+import jeu.Commande;
+import jeu.CommandeNonDirectionnelle;
+import jeu.Direction;
 
 class CommandeTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
+	@Test
+	void toutesRegroupeDirectionsPuisCommandesNonDirectionnelles() {
+		List<Commande> commandes = Commande.toutes();
 
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
-
-	@BeforeEach
-	void setUp() throws Exception {
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
+		assertEquals(Direction.values().length + CommandeNonDirectionnelle.values().length, commandes.size());
+		assertEquals(Direction.NORD, commandes.get(0));
+		assertTrue(commandes.contains(CommandeNonDirectionnelle.AIDE));
 	}
 
 	@Test
-	void test() {
-		fail("Not yet implemented");
+	void listesDeriveesContiennentDescriptionsAbreviationsEtNoms() {
+		assertTrue(Commande.toutesLesDescriptions().contains("? (aide)"));
+		assertTrue(Commande.toutesLesAbreviations().contains("N"));
+		assertTrue(Commande.toutesLesAbreviations().contains("SAUV"));
+		assertTrue(Commande.tousLesNoms().contains("NORD"));
+		assertTrue(Commande.tousLesNoms().contains("QUITTER"));
 	}
 
+	@Test
+	void commandesNonDirectionnellesExposentAbreviationEtDescription() {
+		assertEquals("Q", CommandeNonDirectionnelle.QUITTER.getAbreviation());
+		assertTrue(CommandeNonDirectionnelle.QUITTER.getDescription().contains("quitter"));
+		assertEquals("TP", CommandeNonDirectionnelle.TELEPORTER.getAbreviation());
+	}
 }

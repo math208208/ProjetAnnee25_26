@@ -2,33 +2,20 @@ package test.unitaire.environnement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import jeu.environnement.Meuble;
+import jeu.environnement.TypeMeuble;
 
 class MeubleTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
-
-	@BeforeEach
-	void setUp() throws Exception {
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
-	}
-
 	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
+	void meubleExposeSonNomEtSonType() {
+		Meuble meuble = new Meuble("Miroir", TypeMeuble.MIROIR_MAGIQUE);
 
+		assertEquals("Miroir", meuble.getNom());
+		assertEquals(TypeMeuble.MIROIR_MAGIQUE, meuble.getType());
+		assertArrayEquals(new TypeMeuble[] { TypeMeuble.INTERRUPTEUR, TypeMeuble.MIROIR_MAGIQUE,
+				TypeMeuble.LIVRE_SECRET }, TypeMeuble.values());
+	}
 }

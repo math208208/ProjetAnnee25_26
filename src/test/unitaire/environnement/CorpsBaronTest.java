@@ -2,33 +2,36 @@ package test.unitaire.environnement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import jeu.enigmes.Enigme;
+import jeu.environnement.CorpsBaron;
+import jeu.joueur.Joueur;
+import jeu.objets.Cle;
 
 class CorpsBaronTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
+	@Test
+	void corpsBaronBloqueLouvertureJusquaResolutionDeLEnigme() {
+		Enigme enigme = new Enigme("Question", "reponse");
+		CorpsBaron corps = new CorpsBaron("CorpsBaron", enigme);
+		Joueur joueur = new Joueur("test");
 
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
+		assertSame(enigme, corps.declencherEnigme());
+		assertTrue(corps.estVerrouille());
+		assertFalse(corps.ouvre(joueur));
 
-	@BeforeEach
-	void setUp() throws Exception {
-	}
+		corps.resoudreEnigme();
 
-	@AfterEach
-	void tearDown() throws Exception {
+		assertFalse(corps.estVerrouille());
+		assertTrue(corps.ouvre(joueur));
+		assertTrue(corps.estOuvert());
 	}
 
 	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
+	void corpsBaronNeSouvrePasAvecUneCle() {
+		CorpsBaron corps = new CorpsBaron("CorpsBaron", new Enigme("Question", "reponse"));
 
+		assertFalse(corps.deverrouillerAvecCle(new Cle("cle", "", "CorpsBaron"), new Joueur("test")));
+	}
 }

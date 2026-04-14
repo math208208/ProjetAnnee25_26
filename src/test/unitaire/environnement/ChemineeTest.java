@@ -2,33 +2,35 @@ package test.unitaire.environnement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import jeu.environnement.Cheminee;
+import jeu.joueur.Joueur;
+import jeu.objets.Allumettes;
+import jeu.objets.Cle;
+import jeu.objets.MorceauBois;
 
 class ChemineeTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
+	@Test
+	void allumerFeuNecessiteBoisEtAllumettesPuisLesConsomme() {
+		Cheminee cheminee = new Cheminee("Cheminee");
+		Joueur joueur = new Joueur("test");
 
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
+		assertFalse(cheminee.verifierPresenceBoisAllumettes(joueur.getInventaire()));
+		assertFalse(cheminee.allumerFeu(joueur));
 
-	@BeforeEach
-	void setUp() throws Exception {
-	}
+		joueur.getInventaire().ajoute(new MorceauBois("bois", "Bois"));
+		joueur.getInventaire().ajoute(new Allumettes("allumettes", "Allumettes"));
 
-	@AfterEach
-	void tearDown() throws Exception {
+		assertTrue(cheminee.verifierPresenceBoisAllumettes(joueur.getInventaire()));
+		assertTrue(cheminee.allumerFeu(joueur));
+		assertFalse(joueur.possede("bois"));
+		assertFalse(joueur.possede("allumettes"));
 	}
 
 	@Test
-	void test() {
-		fail("Not yet implemented");
+	void chemineeNestPasDeverrouillableParCle() {
+		assertFalse(new Cheminee("Cheminee").deverrouillerAvecCle(new Cle("cle", "", "Cheminee"), new Joueur("test")));
 	}
-
 }

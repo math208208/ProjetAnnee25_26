@@ -2,33 +2,23 @@ package test.unitaire.joueur;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import jeu.joueur.ProfilJoueur;
 
 class ProfilJoueurTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
-
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
-
-	@BeforeEach
-	void setUp() throws Exception {
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
-	}
-
 	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
+	void profilStockePseudoDateCreationEtVictoires() {
+		ProfilJoueur profil = new ProfilJoueur("Alice");
 
+		assertEquals("Alice", profil.getPseudo());
+		assertNotNull(profil.getDateCreation());
+		assertEquals(0, profil.getPartiesGagnees());
+
+		profil.incrementeVictoires();
+		profil.incrementeVictoires();
+
+		assertEquals(2, profil.getPartiesGagnees());
+	}
 }

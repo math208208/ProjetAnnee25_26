@@ -2,33 +2,33 @@ package test.unitaire.environnement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import jeu.environnement.Armoire;
+import jeu.joueur.Joueur;
+import jeu.objets.Cle;
 
 class ArmoireTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
+	@Test
+	void deverrouillerAvecLaBonneCleOuvreLArmoire() {
+		Cle bonneCle = new Cle("cle_armoire", "Cle armoire", "Armoire");
+		Armoire armoire = new Armoire("Armoire", true, bonneCle);
 
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
-
-	@BeforeEach
-	void setUp() throws Exception {
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
+		assertTrue(armoire.estVerrouille());
+		assertFalse(armoire.estOuvert());
+		assertTrue(armoire.deverrouillerAvecCle(new Cle("cle_armoire", "", "Armoire"), new Joueur("test")));
+		assertFalse(armoire.estVerrouille());
+		assertTrue(armoire.estOuvert());
 	}
 
 	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
+	void mauvaiseCleOuAbsenceDeCleNeDeverrouillePas() {
+		Armoire armoire = new Armoire("Armoire", true, new Cle("cle_armoire", "", "Armoire"));
 
+		assertFalse(armoire.deverrouillerAvecCle(new Cle("cle_bureau", "", "Bureau"), new Joueur("test")));
+		armoire.setCleRequise(null);
+		assertFalse(armoire.deverrouillerAvecCle(new Cle("cle_armoire", "", "Armoire"), new Joueur("test")));
+		assertTrue(armoire.estVerrouille());
+	}
 }

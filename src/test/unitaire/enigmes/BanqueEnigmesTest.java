@@ -2,33 +2,31 @@ package test.unitaire.enigmes;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import jeu.enigmes.BanqueEnigmes;
+import jeu.enigmes.Enigme;
 
 class BanqueEnigmesTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
+	@Test
+	void constructeurChargeDesEnigmesEtRetourneUneEnigmeAleatoire() {
+		BanqueEnigmes banque = new BanqueEnigmes();
 
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
-
-	@BeforeEach
-	void setUp() throws Exception {
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
+		for (int i = 0; i < 20; i++) {
+			Enigme enigme = banque.obtientEnigmeAleatoire();
+			assertNotNull(enigme);
+			assertNotNull(enigme.getQuestion());
+			assertFalse(enigme.getQuestion().isBlank());
+		}
 	}
 
 	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
+	void chargerEnigmesAjouteEncoreDesQuestionsSansCasserLaSelection() {
+		BanqueEnigmes banque = new BanqueEnigmes();
 
+		banque.chargerEnigmes();
+
+		assertNotNull(banque.obtientEnigmeAleatoire());
+	}
 }

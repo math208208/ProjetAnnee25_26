@@ -2,33 +2,30 @@ package test.unitaire.environnement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import jeu.environnement.Bureau;
+import jeu.joueur.Joueur;
+import jeu.objets.Cle;
 
 class BureauTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
+	@Test
+	void deverrouillerAvecLaBonneCleOuvreLeBureau() {
+		Bureau bureau = new Bureau("Bureau", true, new Cle("cle_bureau", "", "Bureau"));
 
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
-
-	@BeforeEach
-	void setUp() throws Exception {
-	}
-
-	@AfterEach
-	void tearDown() throws Exception {
+		assertTrue(bureau.deverrouillerAvecCle(new Cle("cle_bureau", "", "Bureau"), new Joueur("test")));
+		assertFalse(bureau.estVerrouille());
+		assertTrue(bureau.estOuvert());
 	}
 
 	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
+	void bureauRefuseUneMauvaiseCleOuUneCleAbsente() {
+		Bureau bureau = new Bureau("Bureau", true, new Cle("cle_bureau", "", "Bureau"));
 
+		assertFalse(bureau.deverrouillerAvecCle(new Cle("cle_armoire", "", "Armoire"), new Joueur("test")));
+		assertTrue(bureau.estVerrouille());
+		bureau.setCleRequise(null);
+		assertFalse(bureau.deverrouillerAvecCle(new Cle("cle_bureau", "", "Bureau"), new Joueur("test")));
+	}
 }

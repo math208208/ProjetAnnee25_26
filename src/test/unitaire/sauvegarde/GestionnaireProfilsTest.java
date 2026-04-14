@@ -2,33 +2,29 @@ package test.unitaire.sauvegarde;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import jeu.joueur.ProfilJoueur;
+import jeu.sauvegarde.GestionnaireProfils;
 
 class GestionnaireProfilsTest {
 
-	@BeforeAll
-	static void setUpBeforeClass() throws Exception {
-	}
+	@Test
+	void creerProfilLeStockeEtAuthentifierLeRetrouve() {
+		GestionnaireProfils gestionnaire = new GestionnaireProfils();
 
-	@AfterAll
-	static void tearDownAfterClass() throws Exception {
-	}
+		assertNull(gestionnaire.authentifier("Alice"));
 
-	@BeforeEach
-	void setUp() throws Exception {
-	}
+		ProfilJoueur profil = gestionnaire.creerProfil("Alice");
 
-	@AfterEach
-	void tearDown() throws Exception {
+		assertSame(profil, gestionnaire.authentifier("Alice"));
+		assertEquals("Alice", profil.getPseudo());
 	}
 
 	@Test
-	void test() {
-		fail("Not yet implemented");
-	}
+	void sauvegarderProfilsJsonEstActuellementUneOperationVide() {
+		GestionnaireProfils gestionnaire = new GestionnaireProfils();
 
+		assertDoesNotThrow(gestionnaire::sauvegarderProfilsJSON);
+	}
 }
