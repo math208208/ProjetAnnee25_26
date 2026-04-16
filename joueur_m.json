@@ -1,0 +1,11 @@
+{
+  "pseudo": "m",
+  "vies": 3,
+  "zoneActuelle": "chambre1",
+  "fragmentsDetruits": 0,
+  "eclairageActif": true,
+  "chemineActif": true,
+  "positionsObjets": ["cle_bureau=ZONE:bibliothèque", "pipe_bois=CONTENEUR:Armoire:bureau", "medaillonMagique=ZONE:chambre2", "medaillon=CONTENEUR:Coffre:chambre2", "plume=CONTENEUR:CorpsBaron:cave"],
+  "etatsConteneurs": ["cave|CorpsBaron|false|true", "cuisine|Tiroir|true|false", "bureau|Bureau|false|true", "bureau|Armoire|false|false", "chambre1|Coffre|false|true", "chambre2|Coffre|false|true", "salon|Cheminee|false|false"],
+  "inventaire": ["cle_coffre_1", "cle_coffre_2", "echelle"]
+}

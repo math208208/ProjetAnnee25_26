@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import jeu.Direction;
 import jeu.EtatJeu;
-import jeu.GUI;
+import jeu.FausseGUI;
 import jeu.Jeu;
 import jeu.environnement.Zone;
 import jeu.objets.Allumettes;
@@ -17,46 +17,10 @@ import jeu.objets.MorceauBois;
 import jeu.objets.ObjetMaudit;
 import jeu.objets.TypeFragment;
 
-public class JeuTest {
+class JeuTest {
 
     private Jeu jeu;
     private FausseGUI gui;
-
-   
-    class FausseGUI extends GUI {
-        private StringBuilder historique = new StringBuilder();
-
-        public FausseGUI(Jeu jeu) {
-            super(jeu);
-            java.awt.Window[] windows = java.awt.Window.getWindows();
-            for (java.awt.Window window : windows) {
-                window.dispose();
-            }
-        }
-
-        @Override
-        public void afficher(String s) {
-            historique.append(s).append("\n");
-        }
-
-        @Override
-        public void afficher() {
-            historique.append("\n");
-        }
-
-        @Override
-        public void afficheImage(String nomDeBase) {
-            // On ne fait rien pour les images dans les tests unitaires
-        }
-
-        public String getHistorique() {
-            return historique.toString();
-        }
-
-        public void nettoyerHistorique() {
-            historique.setLength(0);
-        }
-    }
 
     @BeforeEach
     void setUp() {

@@ -1,8 +1,5 @@
 package jeu.environnement;
 
-import jeu.Jeu;
-import jeu.joueur.Joueur;
-
 public class Meuble {
 	private String nom;
     private TypeMeuble type;

@@ -186,7 +186,7 @@ public class Jeu {
 			((Conteneur) cachette2).ajouteObjet(fragment2);
 		}
 
-		voirPositionObjetConsole(toutesLesZones);
+		//voirPositionObjetConsole(toutesLesZones);
 	}
 
 	/**
@@ -213,6 +213,7 @@ public class Jeu {
 		}
 	}
 
+	
 	public void setGUI(GUI g) {
 		gui = g;
 	}
@@ -975,6 +976,7 @@ public class Jeu {
 		return this.etatJeu;
 	}
 
+	/*
 	public void voirPositionObjetConsole(List<Zone> toutesLesZones) {
 		System.out.println("\n=== RÉCAPITULATIF DES EMPLACEMENTS (TRICHE) ===");
 		for (Zone z : toutesLesZones) {
@@ -996,7 +998,7 @@ public class Jeu {
 		}
 		System.out.println("===============================================\n");
 	}
-
+	 */
 	private void gererMenuAccueil(String reponse) {
 		if (etapeMenu.equals("DEMANDER_NOM")) {
 			if (reponse.isEmpty()) {

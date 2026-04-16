@@ -1,17 +1,15 @@
 package jeu.environnement;
 
-import jeu.Jeu;
 import jeu.joueur.Inventaire;
 import jeu.joueur.Joueur;
 import jeu.objets.Cle;
-import jeu.objets.ObjetMaudit;
 
 public class Cheminee extends Conteneur {
 	private boolean feuAllume;
 
     public Cheminee(String nom) {
         super(nom, false, null, false);
-        this.feuAllume = false;
+        feuAllume = false;
     }
 
     public boolean verifierPresenceBoisAllumettes(Inventaire inv) {
@@ -22,7 +20,7 @@ public class Cheminee extends Conteneur {
         if (verifierPresenceBoisAllumettes(joueur.getInventaire())) {
             joueur.getInventaire().retire("bois");
             joueur.getInventaire().retire("allumettes");
-            this.feuAllume = true;
+            feuAllume = true;
             return true;
         }
         return false;
@@ -33,5 +31,12 @@ public class Cheminee extends Conteneur {
         return false; 
     }
 
+	public boolean isFeuAllume() {
+		return feuAllume;
+	}
+
+	public void setFeuAllume(boolean feuAllume) {
+		this.feuAllume = feuAllume;
+	}
 
 }

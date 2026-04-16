@@ -6,8 +6,6 @@ import java.util.List;
 
 import javax.swing.SwingUtilities;
 
-import jeu.EtatJeu;
-import jeu.GUI;
 import jeu.Jeu;
 
 public class TestAutomatique {
