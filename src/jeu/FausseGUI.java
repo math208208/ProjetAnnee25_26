@@ -2,7 +2,7 @@ package jeu;
 
 import java.awt.Window;
 
-public class FausseGUI implements GUI {
+public class FausseGUI extends GUI {
     private StringBuilder historique = new StringBuilder();
 
     public FausseGUI(Jeu jeu) {

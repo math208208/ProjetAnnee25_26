@@ -1,0 +1,11 @@
+{
+  "pseudo": "TesteurSauv",
+  "vies": 3,
+  "zoneActuelle": "salon",
+  "fragmentsDetruits": 0,
+  "eclairageActif": true,
+  "chemineActif": true,
+  "positionsObjets": ["pipe_bois=CONTENEUR:CorpsBaron:cave", "cle_bureau=ZONE:chambre1", "medaillonMagique=ZONE:chambre2", "cle_coffre_1=ZONE:salon", "cle_coffre_2=ZONE:petit_couloir", "montre_gousset=CONTENEUR:Coffre:chambre1", "echelle=ZONE:bibliothèque", "bois=ZONE:bibliothèque", "allumettes=CONTENEUR:Tiroir:cuisine", "medaillon=CONTENEUR:Armoire:bureau"],
+  "etatsConteneurs": ["cave|CorpsBaron|false|true", "cuisine|Tiroir|false|false", "bureau|Bureau|false|true", "bureau|Armoire|false|false", "chambre1|Coffre|false|true", "chambre2|Coffre|false|true", "salon|Cheminee|false|false"],
+  "inventaire": []
+}
