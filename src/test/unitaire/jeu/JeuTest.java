@@ -2,140 +2,198 @@ package test.unitaire.jeu;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.util.ArrayDeque;
-import java.util.List;
-import java.util.Random;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import jeu.Direction;
 import jeu.EtatJeu;
+import jeu.GUI;
 import jeu.Jeu;
-import jeu.environnement.Manoir;
 import jeu.environnement.Zone;
-import jeu.joueur.Joueur;
-import jeu.objets.Cle;
+import jeu.objets.Allumettes;
+import jeu.objets.Echelle;
+import jeu.objets.MedaillonMagique;
 import jeu.objets.MorceauBois;
-import test.unitaire.TestSupport;
+import jeu.objets.ObjetMaudit;
+import jeu.objets.TypeFragment;
 
-class JeuTest {
+public class JeuTest {
 
-	@Test
-	void constructeurDemarreSansGuiEtCommandeSansGuiEstRefusee() {
-		Jeu jeu = new Jeu();
+    private Jeu jeu;
+    private FausseGUI gui;
 
-		assertNull(jeu.getGui());
-		assertThrows(IllegalStateException.class, () -> jeu.traiterCommande("?"));
-	}
+   
+    class FausseGUI extends GUI {
+        private StringBuilder historique = new StringBuilder();
 
-	@Test
-	void gettersEtSettersExposentLEtatPrincipalPreparePourLesSauvegardes() {
-		Jeu jeu = TestSupport.jeuPret("Alice");
-		Manoir manoir = jeu.getManoir();
-		Zone cuisine = manoir.obtientZone("cuisine");
+        public FausseGUI(Jeu jeu) {
+            super(jeu);
+            java.awt.Window[] windows = java.awt.Window.getWindows();
+            for (java.awt.Window window : windows) {
+                window.dispose();
+            }
+        }
 
-		jeu.setZoneCourante(cuisine);
-		jeu.setEclairageActif(true);
-		jeu.setChemineActif(true);
-		jeu.setFragmentsDetruits(2);
+        @Override
+        public void afficher(String s) {
+            historique.append(s).append("\n");
+        }
 
-		assertEquals("Alice", jeu.getJoueur().getPseudo());
-		assertSame(manoir, jeu.getManoir());
-		assertSame(cuisine, jeu.getZoneCourante());
-		assertTrue(jeu.isEclairageActif());
-		assertTrue(jeu.isChemineActif());
-		assertEquals(2, jeu.getFragmentsDetruits());
-		assertEquals(EtatJeu.EN_COURS, jeu.getEtatJeu());
-	}
+        @Override
+        public void afficher() {
+            historique.append("\n");
+        }
 
-	@Test
-	void etatJeuContientLesTroisEtatsAttendus() {
-		assertArrayEquals(new EtatJeu[] { EtatJeu.EN_COURS, EtatJeu.VICTOIRE, EtatJeu.DEFAITE }, EtatJeu.values());
-	}
+        @Override
+        public void afficheImage(String nomDeBase) {
+            // On ne fait rien pour les images dans les tests unitaires
+        }
 
-	@Test
-	void fieldsPrivesPeuventRepresenterUnJoueurEtUnManoirInitialises() {
-		Jeu jeu = new Jeu();
-		Joueur joueur = new Joueur("Bob");
-		Manoir manoir = new Manoir();
+        public String getHistorique() {
+            return historique.toString();
+        }
 
-		TestSupport.setField(jeu, "joueur", joueur);
-		TestSupport.setField(jeu, "manoir", manoir);
-		TestSupport.setField(jeu, "zoneCourante", manoir.getZoneDepart());
-		TestSupport.setField(jeu, "etatJeu", EtatJeu.VICTOIRE);
+        public void nettoyerHistorique() {
+            historique.setLength(0);
+        }
+    }
 
-		assertSame(joueur, jeu.getJoueur());
-		assertSame(manoir, jeu.getManoir());
-		assertEquals("salon", jeu.getZoneCourante().getNom());
-		assertEquals(EtatJeu.VICTOIRE, jeu.getEtatJeu());
-	}
+    @BeforeEach
+    void setUp() {
+        jeu = new Jeu();
+        gui = new FausseGUI(jeu);
+        jeu.setGUI(gui);
 
-	@Test
-	void genererNomImageBaseSuitLEtatDeLaZoneEtDesObjetsVisibles() {
-		Jeu jeu = TestSupport.jeuPret("Alice");
+        jeu.demarrerEcranTitre();
+        jeu.traiterCommande("TesteurUnitaire");
+        
+        if (gui.getHistorique().contains("Voulez-vous la charger")) {
+            jeu.traiterCommande("NON");
+        }
+        
+        gui.nettoyerHistorique();
+    }
 
-		String salonEteint = TestSupport.invokePrivate(jeu, "genererNomImageBase", new Class<?>[] {});
-		assertEquals("salon/salon_OFF_chemine_OFF", salonEteint);
+    @Test
+    void testInitialisationNouvellePartie() {
+        assertEquals(EtatJeu.EN_COURS, jeu.getEtatJeu());
+        assertNotNull(jeu.getJoueur());
+        assertEquals("TesteurUnitaire", jeu.getJoueur().getPseudo());
+        assertEquals("salon", jeu.getZoneCourante().getNom());
+        assertFalse(jeu.isEclairageActif());
+        assertFalse(jeu.isChemineActif());
+    }
 
-		Zone bibliotheque = jeu.getManoir().getToutesLesZones().stream()
-				.filter(zone -> zone.getNom().toLowerCase().startsWith("biblioth")).findFirst().orElseThrow();
-		bibliotheque.ajouteObjet(new MorceauBois("bois", "Bois"));
-		jeu.setZoneCourante(bibliotheque);
-		jeu.setEclairageActif(true);
+    @Test
+    void testDeplacementEtRetour() {
+        assertEquals("salon", jeu.getZoneCourante().getNom());
 
-		String imageBibliotheque = TestSupport.invokePrivate(jeu, "genererNomImageBase", new Class<?>[] {});
+        jeu.traiterCommande("NORD");
+        assertEquals("grand_couloir", jeu.getZoneCourante().getNom());
 
-		assertTrue(imageBibliotheque.contains("_ON"));
-		assertTrue(imageBibliotheque.endsWith("_bois"));
-	}
+        jeu.traiterCommande("RETOUR");
+        assertEquals("salon", jeu.getZoneCourante().getNom());
+    }
 
-	@Test
-	void retourEstPossibleSeulementSiLaZoneCouranteAPourSortieLaZonePrecedente() {
-		Jeu jeu = TestSupport.jeuPret("Alice");
-		Manoir manoir = jeu.getManoir();
-		ArrayDeque<Zone> historique = new ArrayDeque<>();
-		historique.push(manoir.obtientZone("salon"));
-		TestSupport.setField(jeu, "historiqueZones", historique);
-		jeu.setZoneCourante(manoir.obtientZone("grand_couloir"));
+    @Test
+    void testPrendreObjetEtInventaire() {
+        Echelle echelle = new Echelle("echelle_test", "Une belle echelle");
+        jeu.getZoneCourante().ajouteObjet(echelle);
 
-		Boolean possible = TestSupport.invokePrivate(jeu, "retourEstPossible", new Class<?>[] {});
+        jeu.traiterCommande("PRENDRE echelle_test");
+        
+        assertTrue(jeu.getJoueur().getInventaire().possede("echelle_test"));
+        assertNull(jeu.getZoneCourante().retireObjet("echelle_test"));
+    }
 
-		assertTrue(possible);
+    @Test
+    void testAllumerLumiere() {
+        assertFalse(jeu.isEclairageActif());
+        
+        jeu.traiterCommande("CMD1");
+        
+        assertTrue(jeu.isEclairageActif());
+        assertTrue(gui.getHistorique().contains("La lumière inonde le manoir"));
+    }
 
-		jeu.setZoneCourante(manoir.obtientZone("cuisine"));
+    @Test
+    void testAllumerFeuChemine() {
+        jeu.traiterCommande("CMD1");
 
-		Boolean impossible = TestSupport.invokePrivate(jeu, "retourEstPossible", new Class<?>[] {});
+        jeu.getJoueur().getInventaire().ajoute(new MorceauBois("bois", "Un bois"));
+        jeu.getJoueur().getInventaire().ajoute(new Allumettes("allumettes", "Allumettes"));
 
-		assertFalse(impossible);
-	}
+        jeu.traiterCommande("ALLUMER_FEU");
 
-	@Test
-	void getZonesVisiteesDedoublonneLaZoneCouranteEtLHistorique() {
-		Jeu jeu = TestSupport.jeuPret("Alice");
-		Manoir manoir = jeu.getManoir();
-		ArrayDeque<Zone> historique = new ArrayDeque<>();
-		historique.push(manoir.obtientZone("salon"));
-		historique.push(manoir.obtientZone("cuisine"));
-		historique.push(manoir.obtientZone("salon"));
-		TestSupport.setField(jeu, "historiqueZones", historique);
-		jeu.setZoneCourante(manoir.obtientZone("salon"));
+        assertTrue(jeu.isChemineActif());
+        assertFalse(jeu.getJoueur().getInventaire().possede("bois"), "Le bois doit être consommé");
+        assertFalse(jeu.getJoueur().getInventaire().possede("allumettes"), "Les allumettes doivent être consommées");
+    }
 
-		List<Zone> visitees = TestSupport.invokePrivate(jeu, "getZonesVisitees", new Class<?>[] {});
+    @Test
+    void testVictoireBrulerFragments() {
+        jeu.traiterCommande("CMD1");
+        jeu.setChemineActif(true); 
 
-		assertEquals(2, visitees.size());
-		assertTrue(visitees.contains(manoir.obtientZone("salon")));
-		assertTrue(visitees.contains(manoir.obtientZone("cuisine")));
-	}
+        jeu.getJoueur().getInventaire().ajoute(new ObjetMaudit("frag1", "Fragment", TypeFragment.MEDAILLON));
+        jeu.getJoueur().getInventaire().ajoute(new ObjetMaudit("frag2", "Fragment", TypeFragment.JOURNAL_INTIME));
+        jeu.getJoueur().getInventaire().ajoute(new ObjetMaudit("frag3", "Fragment", TypeFragment.PIPE_BOIS));
 
-	@Test
-	void placerCleCoffreAjouteLaCleDansUneZoneDisponible() {
-		Jeu jeu = TestSupport.jeuPret("Alice");
-		Zone zone = new Zone("test", "zone test", "test", false);
-		Cle cle = new Cle("cle_coffre_1", "Cle", "Coffre");
+        jeu.traiterCommande("BRULER");
 
-		TestSupport.invokePrivate(jeu, "placerCleCoffre",
-				new Class<?>[] { Cle.class, List.class, Random.class }, cle, List.of(zone), new Random(1));
+        assertEquals(3, jeu.getFragmentsDetruits());
+        assertEquals(EtatJeu.VICTOIRE, jeu.getEtatJeu());
+        assertTrue(gui.getHistorique().contains("Félicitations"));
+    }
 
-		assertSame(cle, zone.retireObjet("cle_coffre_1"));
-	}
+    @Test
+    void testDefaitePiegeDeLaCaveSansEchelle() {
+        jeu.traiterCommande("N"); 
+        jeu.traiterCommande("E"); 
+
+        jeu.traiterCommande("OUVRIR livre");
+        
+        jeu.traiterCommande("S");
+
+        assertEquals("cave", jeu.getZoneCourante().getNom());
+        assertEquals(EtatJeu.DEFAITE, jeu.getEtatJeu());
+    }
+
+    @Test
+    void testOuvrirPassageSecretBibliotheque() {
+        jeu.traiterCommande("N"); 
+        jeu.traiterCommande("E"); 
+        
+        Zone cave = jeu.getManoir().obtientZone("cave");
+        assertNull(jeu.getZoneCourante().obtientSortie(Direction.SUD), "La sortie SUD doit être cachée initialement");
+
+        jeu.traiterCommande("OUVRIR livre");
+
+        assertNotNull(jeu.getZoneCourante().obtientSortie(Direction.SUD), "La sortie SUD doit être révélée");
+        assertEquals(cave, jeu.getZoneCourante().obtientSortie(Direction.SUD));
+    }
+
+    @Test
+    void testTeleportationMiroirSalleDeBain() {
+        jeu.getJoueur().getInventaire().ajoute(new MedaillonMagique("medaillonMagique", "Medaillon"));
+
+        jeu.traiterCommande("N");
+        jeu.traiterCommande("N");
+        jeu.traiterCommande("N");
+        assertEquals("salle_de_bain", jeu.getZoneCourante().getNom());
+
+        jeu.traiterCommande("MIROIR");
+        
+        jeu.traiterCommande("TELEPORTER salon");
+
+        assertEquals("salon", jeu.getZoneCourante().getNom());
+        assertTrue(gui.getHistorique().contains("Le monde tourne autour de vous"));
+    }
+
+    @Test
+    void testAbandonner() {
+        jeu.traiterCommande("ABANDON");
+        assertEquals(EtatJeu.DEFAITE, jeu.getEtatJeu());
+        assertTrue(gui.getHistorique().contains("Vous avez abandonné"));
+    }
 }
