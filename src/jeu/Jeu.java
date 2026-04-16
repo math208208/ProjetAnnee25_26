@@ -238,17 +238,32 @@ public class Jeu {
 
 	private void afficherMessageDeBienvenue() {
 		verifieGUI();
-		gui.afficher("Bienvenue dans l'Héritage Maudit !");
+		gui.afficher();
+		gui.afficher("Bienvenue dans l'Héritage Maudit !, vous etes un.e jeune chasseur.euse"
+				+ " de fantôme qui a hérité.e du manoir de son grand père, le baron Cole, "
+				+ "récemment décédé dans des circonstances mystérieuses. "
+				+ "En explorant le manoir, vous découvrez que l'esprit du baron hante les lieux "
+				+ "et que pour le libérer de sa malédiction, vous devez purifier le manoir "
+				+ "en détruisant les 3 fragments d'âme qui le lient à ce monde."
+				+ "Vous commencerez votre aventure avec 3 vies, et devrez "
+				+ "faire preuve de prudence et d'ingéniosité pour surmonter les pièges, "
+				+ "résoudre les énigmes et affronter le fantôme du baron lui-même. "
+				+ "Vous avez un sac à dos avec une capacité limitée à 6 objets, "
+				+ "alors choisissez judicieusement ce que vous emportez. ");
+		
 		gui.afficher();
 		gui.afficher(
 				"Le manoir est plongé dans une obscurité glaciale. Tant que la lumière est éteinte, les objets dissimulés sur le sol resteront invisibles à vos yeux...");
 		gui.afficher();
 		gui.afficher("Tapez '?' pour obtenir de l'aide.");
 		gui.afficher();
-		afficherLocalisation();
 		afficherCommandesPossibles();
 		gui.afficher();
 		gui.afficheImage(zoneCourante.nomImage());
+		
+		
+	
+
 	}
 
 	private void afficherCommandesPossibles() {
