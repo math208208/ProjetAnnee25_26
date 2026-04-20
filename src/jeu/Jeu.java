@@ -62,8 +62,8 @@ public class Jeu {
 
 	/** Affiche l'écran titre et demande le nom du joueur. */
 	public void demarrerEcranTitre() {
-		gui.afficher("BIENVENUE DANS LE MANOIR");
-		gui.afficher("Veuillez entrer votre nom de joueur : ");
+		gui.afficher("=== L'HERITAGE MAUDIT ===");
+		gui.afficher("Entrez votre nom de joueur dans le champ Commande, puis appuyez sur Entree.");
 	}
 
 	/**
@@ -252,42 +252,46 @@ public class Jeu {
 
 	private void afficherCommandesPossibles() {
 		if (!eclairageActif && !zoneCourante.getNom().equalsIgnoreCase("salon")) {
-			gui.afficher(
-					"Il fait nuit noire... Les commandes sont invisibles. Vous pouvez seulement tâtonner pour vous déplacer (N, S, E, O).");
+			gui.afficher("Commandes disponibles :\n- Se deplacer a tatons : N, S, E, O");
 			return;
 		}
 
 		List<String> cmds = new ArrayList<>();
-		cmds.add("Déplacement (N, S, E, O)");
+		cmds.add("Se deplacer : N, S, E, O");
 		cmds.add("Retour (R)");
 		cmds.add("Inventaire (I)");
-		cmds.add("Prendre (P) / Déposer (D)");
-		cmds.add("Ouvrir (OU)");
+		cmds.add("Prendre un objet (P <nom>)");
+		cmds.add("Ouvrir un meuble ou passage (OU <nom>)");
 		cmds.add("Quitter (Q)");
-		cmds.add("Abandonner (A)");
+		cmds.add("Abandonner (AB)");
 		cmds.add("Sauvegarder (SAUV)");
 
 		String nomZone = zoneCourante.getNom().toLowerCase();
 		if (nomZone.equals("salon")) {
 			if (!eclairageActif) {
-				cmds.add("Commande 1 (CMD1)");
-				cmds.add("Commande 2 (CMD2)");
+				cmds.add("Allumer la lumiere (CMD1)");
+				cmds.add("Essayer la cheminee (CMD2)");
 			} else {
-				cmds.remove("Commande 1 (CMD1)");
-				cmds.remove("Commande 2 (CMD2)");
 				if (!chemineActif) {
-					cmds.add("Allumer feu (AF)");
+					cmds.add("Allumer le feu (AF)");
 				} else {
-					cmds.add("Brûler objet maudit (B)");
+					cmds.add("Bruler les fragments maudits (B)");
 				}
 			}
-			if (nomZone.equals("la salle de bain")) {
-				cmds.add("Miroir (M)");
+		}
+
+		if (nomZone.equals("salle_de_bain")) {
+			cmds.add("Activer le miroir (M)");
+			if (miroirActive) {
+				cmds.add("Se teleporter (TP <piece>)");
 			}
 		}
-		cmds.add("Ouvrir (OU)");
 
-		gui.afficher("Commandes disponibles : " + String.join(", ", cmds));
+		StringBuilder texteCommandes = new StringBuilder("Commandes disponibles :");
+		for (String cmd : cmds) {
+			texteCommandes.append("\n- ").append(cmd);
+		}
+		gui.afficher(texteCommandes.toString());
 	}
 
 	/**
@@ -297,7 +301,7 @@ public class Jeu {
 	 */
 	public void traiterCommande(String texteSaisi) {
 		verifieGUI();
-		gui.afficher("> " + texteSaisi + "\n");
+		gui.afficher("> " + texteSaisi);
 
 		String[] mots = texteSaisi.trim().split(" ", 2);
 		String commande = mots[0].toUpperCase();
@@ -386,7 +390,7 @@ public class Jeu {
 		}
 		case "AB", "ABANDON" -> abandonSansSauv();
 		case "Q", "QUITTER" -> terminer();
-		default -> gui.afficher("Commande inconnue");
+		default -> gui.afficher("Commande inconnue. Tapez ? pour afficher l'aide.");
 		}
 	}
 
@@ -544,7 +548,8 @@ public class Jeu {
 
 	private void prendreObjet(String nomObjet) {
 		if (joueur.getInventaire().estPlein()) {
-			gui.afficher("Votre sac à dos est plein ! Capacité maximale de 5 objets atteinte.");
+			gui.afficher("Votre sac a dos est plein ! Capacite maximale de "
+					+ joueur.getInventaire().getCapaciteMax() + " objets atteinte.");
 			return;
 		}
 
@@ -668,12 +673,12 @@ public class Jeu {
 
 	private void afficherAide() {
 		verifieGUI();
-		gui.afficher("Etes-vous perdu ?");
-		gui.afficher();
-		gui.afficher("Les commandes autorisées sont :");
-		gui.afficher();
-		gui.afficher(Commande.toutesLesDescriptions().toString());
-		gui.afficher();
+		StringBuilder aide = new StringBuilder("Aide rapide :");
+		for (String description : Commande.toutesLesDescriptions()) {
+			aide.append("\n- ").append(description);
+		}
+		aide.append("\n\nExemples : P bois, OU coffre, REPONDRE votre reponse.");
+		gui.afficher(aide.toString());
 	}
 
 	private void allerEn(Direction direction) {
@@ -1037,6 +1042,7 @@ public class Jeu {
 		this.zoneCourante = manoir.getZoneDepart();
 		this.etatJeu = EtatJeu.EN_COURS;
 
+		boolean messageBienvenueAffiche = false;
 		if (chargerSauvegarde) {
 			EtatPartie etat = gestionnaireSauvegarde.chargerPartie(nom);
 			if (etat != null) {
@@ -1045,11 +1051,16 @@ public class Jeu {
 			} else {
 				gui.afficher("Erreur lors du chargement. Démarrage d'une nouvelle partie...");
 				afficherMessageDeBienvenue();
+				messageBienvenueAffiche = true;
 			}
 		} else {
 			afficherMessageDeBienvenue();
+			messageBienvenueAffiche = true;
 		}
-		gui.afficher(zoneCourante.descriptionLongue());
+		if (!messageBienvenueAffiche) {
+			gui.afficher(zoneCourante.descriptionLongue());
+			afficherCommandesPossibles();
+		}
 		rafraichirImage();
 	}
 
