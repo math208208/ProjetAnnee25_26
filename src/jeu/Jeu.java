@@ -22,11 +22,13 @@ import jeu.util.TestAutomatique;
 /**
  * Classe principale gérant la logique du jeu.
  *
- * <p>Elle contient l'état courant (zone, joueur, inventaire, etc.) et expose des
+ * <p>
+ * Elle contient l'état courant (zone, joueur, inventaire, etc.) et expose des
  * méthodes pour traiter les commandes, gérer l'initialisation et l'avancement
  * de la partie.
  *
- * <p>La documentation des méthodes importantes est fournie pour faciliter la
+ * <p>
+ * La documentation des méthodes importantes est fournie pour faciliter la
  * compréhension par des débutants.
  */
 public class Jeu {
@@ -62,15 +64,16 @@ public class Jeu {
 
 	/** Affiche l'écran titre et demande le nom du joueur. */
 	public void demarrerEcranTitre() {
-		gui.afficher("BIENVENUE DANS LE MANOIR");
-		gui.afficher("Veuillez entrer votre nom de joueur : ");
+		gui.afficher("=== L'HERITAGE MAUDIT ===");
+		gui.afficher("Entrez votre nom de joueur dans le champ Commande, puis appuyez sur Entree.");
 	}
 
 	/**
 	 * Initialise et place les objets dans le manoir.
 	 *
-	 * <p>Cette méthode prépare les objets fixes, répartit aléatoirement des objets
-	 * sur le sol et place les clés/objets maudits selon des règles du jeu.
+	 * <p>
+	 * Cette méthode prépare les objets fixes, répartit aléatoirement des objets sur
+	 * le sol et place les clés/objets maudits selon des règles du jeu.
 	 */
 	private void initialiserObjets() {
 		Random random = new Random();
@@ -186,15 +189,15 @@ public class Jeu {
 			((Conteneur) cachette2).ajouteObjet(fragment2);
 		}
 
-		//voirPositionObjetConsole(toutesLesZones);
+		// voirPositionObjetConsole(toutesLesZones);
 	}
 
 	/**
 	 * Cherche une cachette valide pour placer une clé de coffre.
 	 *
-	 * @param cle     clé à placer
+	 * @param cle       clé à placer
 	 * @param cachettes liste de zones ou conteneurs possibles
-	 * @param random  générateur aléatoire
+	 * @param random    générateur aléatoire
 	 */
 	private void placerCleCoffre(Cle cle, List<Object> cachettes, Random random) {
 		boolean placee = false;
@@ -213,7 +216,6 @@ public class Jeu {
 		}
 	}
 
-	
 	public void setGUI(GUI g) {
 		gui = g;
 	}
@@ -250,7 +252,7 @@ public class Jeu {
 				+ "résoudre les énigmes et affronter le fantôme du baron lui-même. "
 				+ "Vous avez un sac à dos avec une capacité limitée à 6 objets, "
 				+ "alors choisissez judicieusement ce que vous emportez. ");
-		
+
 		gui.afficher();
 		gui.afficher(
 				"Le manoir est plongé dans une obscurité glaciale. Tant que la lumière est éteinte, les objets dissimulés sur le sol resteront invisibles à vos yeux...");
@@ -260,27 +262,23 @@ public class Jeu {
 		afficherCommandesPossibles();
 		gui.afficher();
 		gui.afficheImage(zoneCourante.nomImage());
-		
-		
-	
 
 	}
 
 	private void afficherCommandesPossibles() {
 		if (!eclairageActif && !zoneCourante.getNom().equalsIgnoreCase("salon")) {
-			gui.afficher(
-					"Il fait nuit noire... Les commandes sont invisibles. Vous pouvez seulement tâtonner pour vous déplacer (N, S, E, O).");
+			gui.afficher("Commandes disponibles :\n- Se deplacer a tatons : N, S, E, O");
 			return;
 		}
 
 		List<String> cmds = new ArrayList<>();
-		cmds.add("Déplacement (N, S, E, O)");
+		cmds.add("Se deplacer : N, S, E, O");
 		cmds.add("Retour (R)");
 		cmds.add("Inventaire (I)");
-		cmds.add("Prendre (P) / Déposer (D)");
-		cmds.add("Ouvrir (OU)");
+		cmds.add("Prendre un objet (P <nom>)");
+		cmds.add("Ouvrir un meuble ou passage (OU <nom>)");
 		cmds.add("Quitter (Q)");
-		cmds.add("Abandonner (A)");
+		cmds.add("Abandonner (AB)");
 		cmds.add("Sauvegarder (SAUV)");
 
 		String nomZone = zoneCourante.getNom().toLowerCase();
@@ -292,18 +290,26 @@ public class Jeu {
 				cmds.remove("Commande 1 (CMD1)");
 				cmds.remove("Commande 2 (CMD2)");
 				if (!chemineActif) {
-					cmds.add("Allumer feu (AF)");
+					cmds.add("Allumer le feu (AF)");
 				} else {
-					cmds.add("Brûler objet maudit (B)");
+					cmds.add("Brûler les objets maudits (B)");
 				}
 			}
-			if (nomZone.equals("la salle de bain")) {
-				cmds.add("Miroir (M)");
+
+		}
+
+		if (nomZone.equals("salle_de_bain")) {
+			cmds.add("Activer le miroir (M)");
+			if (miroirActive) {
+				cmds.add("Se teleporter (TP <piece>)");
 			}
 		}
-		cmds.add("Ouvrir (OU)");
 
-		gui.afficher("Commandes disponibles : " + String.join(", ", cmds));
+		StringBuilder texteCommandes = new StringBuilder("Commandes disponibles :");
+		for (String cmd : cmds) {
+			texteCommandes.append("\n- ").append(cmd);
+		}
+		gui.afficher(texteCommandes.toString());
 	}
 
 	/**
@@ -402,7 +408,7 @@ public class Jeu {
 		}
 		case "AB", "ABANDON" -> abandonSansSauv();
 		case "Q", "QUITTER" -> terminer();
-		default -> gui.afficher("Commande inconnue");
+		default -> gui.afficher("Commande inconnue. Tapez ? pour afficher l'aide.");
 		}
 	}
 
@@ -523,9 +529,7 @@ public class Jeu {
 		} else {
 			gui.afficher("Le Baron ricane : 'Ce n'est pas la bonne réponse...' L'aura vous glace le sang.");
 			joueur.perdreVie();
-			gui.afficher(
-					" Piège ! Il vous reste "
-							+ joueur.getVies() + " vies.");
+			gui.afficher(" Piège ! Il vous reste " + joueur.getVies() + " vies.");
 			if (joueur.getVies() <= 0) {
 				finDePartie();
 			}
@@ -560,7 +564,8 @@ public class Jeu {
 
 	private void prendreObjet(String nomObjet) {
 		if (joueur.getInventaire().estPlein()) {
-			gui.afficher("Votre sac à dos est plein ! Capacité maximale de 5 objets atteinte.");
+			gui.afficher("Votre sac a dos est plein ! Capacite maximale de " + joueur.getInventaire().getCapaciteMax()
+					+ " objets atteinte.");
 			return;
 		}
 
@@ -684,12 +689,12 @@ public class Jeu {
 
 	private void afficherAide() {
 		verifieGUI();
-		gui.afficher("Etes-vous perdu ?");
-		gui.afficher();
-		gui.afficher("Les commandes autorisées sont :");
-		gui.afficher();
-		gui.afficher(Commande.toutesLesDescriptions().toString());
-		gui.afficher();
+		StringBuilder aide = new StringBuilder("Aide rapide :");
+		for (String description : Commande.toutesLesDescriptions()) {
+			aide.append("\n- ").append(description);
+		}
+		aide.append("\n\nExemples : P bois, OU coffre, REPONDRE votre reponse.");
+		gui.afficher(aide.toString());
 	}
 
 	private void allerEn(Direction direction) {
@@ -992,27 +997,18 @@ public class Jeu {
 	}
 
 	/*
-	public void voirPositionObjetConsole(List<Zone> toutesLesZones) {
-		System.out.println("\n=== RÉCAPITULATIF DES EMPLACEMENTS (TRICHE) ===");
-		for (Zone z : toutesLesZones) {
-			String objetsSol = z.listerObjets();
-			if (!objetsSol.equals("Il n'y a aucun objet visible ici.")) {
-				System.out.println("[SOL] " + z.getNom() + " -> " + objetsSol);
-			}
-
-			for (Conteneur c : z.getConteneurs()) {
-				if (!c.getContenu().isEmpty()) {
-					java.util.List<String> nomsObjets = new java.util.ArrayList<>();
-					for (ObjetJeu obj : c.getContenu()) {
-						nomsObjets.add(obj.getNom());
-					}
-					System.out.println("[MEUBLE] " + z.getNom() + " (dans " + c.getNom() + ") -> "
-							+ String.join(", ", nomsObjets));
-				}
-			}
-		}
-		System.out.println("===============================================\n");
-	}
+	 * public void voirPositionObjetConsole(List<Zone> toutesLesZones) {
+	 * System.out.println("\n=== RÉCAPITULATIF DES EMPLACEMENTS (TRICHE) ==="); for
+	 * (Zone z : toutesLesZones) { String objetsSol = z.listerObjets(); if
+	 * (!objetsSol.equals("Il n'y a aucun objet visible ici.")) {
+	 * System.out.println("[SOL] " + z.getNom() + " -> " + objetsSol); }
+	 * 
+	 * for (Conteneur c : z.getConteneurs()) { if (!c.getContenu().isEmpty()) {
+	 * java.util.List<String> nomsObjets = new java.util.ArrayList<>(); for
+	 * (ObjetJeu obj : c.getContenu()) { nomsObjets.add(obj.getNom()); }
+	 * System.out.println("[MEUBLE] " + z.getNom() + " (dans " + c.getNom() +
+	 * ") -> " + String.join(", ", nomsObjets)); } } }
+	 * System.out.println("===============================================\n"); }
 	 */
 	private void gererMenuAccueil(String reponse) {
 		if (etapeMenu.equals("DEMANDER_NOM")) {
@@ -1054,6 +1050,8 @@ public class Jeu {
 		this.zoneCourante = manoir.getZoneDepart();
 		this.etatJeu = EtatJeu.EN_COURS;
 
+		boolean messageBienvenueAffiche = false;
+
 		if (chargerSauvegarde) {
 			EtatPartie etat = gestionnaireSauvegarde.chargerPartie(nom);
 			if (etat != null) {
@@ -1062,11 +1060,16 @@ public class Jeu {
 			} else {
 				gui.afficher("Erreur lors du chargement. Démarrage d'une nouvelle partie...");
 				afficherMessageDeBienvenue();
+				messageBienvenueAffiche = true;
 			}
 		} else {
 			afficherMessageDeBienvenue();
+			messageBienvenueAffiche = true;
 		}
-		gui.afficher(zoneCourante.descriptionLongue());
+		if (!messageBienvenueAffiche) {
+			gui.afficher(zoneCourante.descriptionLongue());
+			afficherCommandesPossibles();
+		}
 		rafraichirImage();
 	}
 

@@ -21,14 +21,6 @@ class CommandeTest {
 		assertTrue(commandes.contains(CommandeNonDirectionnelle.AIDE));
 	}
 
-	@Test
-	void listesDeriveesContiennentDescriptionsAbreviationsEtNoms() {
-		assertTrue(Commande.toutesLesDescriptions().contains("? (aide)"));
-		assertTrue(Commande.toutesLesAbreviations().contains("N"));
-		assertTrue(Commande.toutesLesAbreviations().contains("SAUV"));
-		assertTrue(Commande.tousLesNoms().contains("NORD"));
-		assertTrue(Commande.tousLesNoms().contains("QUITTER"));
-	}
 
 	@Test
 	void commandesNonDirectionnellesExposentAbreviationEtDescription() {

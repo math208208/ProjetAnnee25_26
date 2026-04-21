@@ -127,7 +127,21 @@ public class Zone {
 	}
 
 	public String descriptionLongue() {
-		return "Vous êtes dans " + description + "\nSorties : " + sorties.keySet().toString();
+		StringBuilder sb = new StringBuilder();
+		sb.append("Lieu : ").append(description);
+		sb.append("\nSorties : ");
+
+		if (sorties.isEmpty()) {
+			sb.append("aucune");
+		} else {
+			List<String> nomsSorties = new ArrayList<>();
+			for (Direction direction : sorties.keySet()) {
+				nomsSorties.add(direction.name());
+			}
+			sb.append(String.join(", ", nomsSorties));
+		}
+
+		return sb.toString();
 	}
 
 	public List<ObjetJeu> getObjetsPresents() {
